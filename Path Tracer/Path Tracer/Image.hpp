@@ -12,13 +12,15 @@
 #include <string>
 #include <vector>
 
+#include "vec3.hpp"
+
 class Image {
     
 public:
     Image(int width, int height);
     int getWidth();
     int getHeight();
-    void setColor(int x, int y, float r, float g, float b);
+    void setColor(int x, int y, vec3 c);
     void write(std::string filename);
     
 private:

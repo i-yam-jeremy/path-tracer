@@ -8,19 +8,15 @@
 
 #include <iostream>
 
-#include "Image.hpp"
+#include "PathTracer.hpp"
+
+#define RENDER_WIDTH (1920/4)
+#define RENDER_HEIGHT (1080/4)
 
 int main(int argc, const char * argv[]) {
     
-    Image image(512, 512);
-    
-    for (int y = 0; y < 512; y++) {
-        for (int x = 0; x < 512; x++) {
-            image.setColor(x, y, float(x)/512.0, float(y)/512.0, 0.0);
-        }
-    }
-    
-    image.write("/Users/i-yam-jeremy/Desktop/out.ppm");
+    PathTracer pathTracer;
+    pathTracer.render("/Users/i-yam-jeremy/Desktop/out.ppm", RENDER_WIDTH, RENDER_HEIGHT);
     
     std::cout << "Done\n";
     return 0;

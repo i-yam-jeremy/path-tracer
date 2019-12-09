@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 Image::Image(int width, int height) {
     this->width = width;
@@ -25,11 +26,15 @@ int Image::getHeight() {
     return height;
 }
 
-void Image::setColor(int x, int y, float r, float g, float b) {
+float clamp(float x, float lo, float hi) {
+    return std::max(lo, std::min(x, hi));
+}
+
+void Image::setColor(int x, int y, vec3 c) {
     long index = 3*(y*width + x);
-    this->data[index + 0] = r;
-    this->data[index + 1] = g;
-    this->data[index + 2] = b;
+    this->data[index + 0] = clamp(c.x, 0.0, 1.0);
+    this->data[index + 1] = clamp(c.y, 0.0, 1.0);
+    this->data[index + 2] = clamp(c.z, 0.0, 1.0);
     
 }
 
