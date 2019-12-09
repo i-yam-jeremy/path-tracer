@@ -12,8 +12,7 @@
 
 #include <cmath>
 #include <random>
-
-#include <stdio.h>
+#include <iostream>
 
 PathTracer::PathTracer() {
     
@@ -27,6 +26,7 @@ void PathTracer::render(std::string filename, int width, int height) {
             vec2 uv(2.0*float(x - width/2) / float(height), 2.0*float(y - height/2) / float(height));
             image.setColor(x, y, renderPixel(uv));
         }
+        std::cout << (100.0 * float((y+1)*width) / float(width*height)) << "%" << std::endl;
     }
     
     image.write(filename);
@@ -41,8 +41,11 @@ vec3 PathTracer::renderPixel(vec2 uv) {
 vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
     Scene::Intersection in = this->scene.findIntersection(ray);
     if (in.intersects) {
-        if (bounceCount == 2) {
-            return in.normal;//vec3(1);
+        if (in.objectId == 2) {
+            return vec3(50); // Light
+        }
+        else if (bounceCount == 3) {
+            return vec3(0);
         }
         else {
             vec3 N = in.normal;
@@ -52,13 +55,12 @@ vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
                                           std::atan2(std::sqrt(N.x*N.x + N.y*N.y), N.z));
             std::random_device rd;
             std::mt19937 e2(rd());
-            std::uniform_real_distribution<float> dist(-1, 1);
+            std::uniform_real_distribution<float> dist(-(M_PI/2.0), (M_PI/2.0));
             vec3 color = vec3(0);
-            int sampleCount = 1;
-            //printf("(%f, %f, %f) -> (%f, %f, %f)\n", N.x, N.y, N.z, sphereCoordNormal.x, sphereCoordNormal.y, sphereCoordNormal.z);
+            int sampleCount = 50 / ((bounceCount+1)*(bounceCount+1));
             for (int i = 0; i < sampleCount; i++) {
-                float deltaTheta = 0.0;//(M_PI/2.0) * dist(e2);
-                float deltaPhi = 0.0;//(M_PI/2.0) * dist(e2);
+                float deltaTheta = dist(e2);
+                float deltaPhi = dist(e2);
                 vec3 s = vec3( // sphereCoordPathDir
                                sphereCoordNormal.x,
                                sphereCoordNormal.y + deltaTheta,
@@ -69,12 +71,10 @@ vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
                                     s.x*sin(s.z)*sin(s.y),
                                     s.x*cos(s.z)
                                     );
-                //printf("(%f, %f, %f) -> (%f, %f, %f)\n", N.x, N.y, N.z, pathDir.x, pathDir.y, pathDir.z);
-                //float lambertReflectanceFactor = dot(N, pathDir);
-                color = color + /*vec3(lambertReflectanceFactor)**/renderPath(Ray(in.pos + 0.0001*N, pathDir), bounceCount+1);
+                float lambertReflectanceFactor = dot(N, pathDir);
+                color = color + vec3(lambertReflectanceFactor)*renderPath(Ray(in.pos + 0.000001*N, pathDir), bounceCount+1);
             }
-            color = color * vec3(1.0/sampleCount);
-            return color;
+            return 0.8*color;
         }
     }
     return vec3(0);
