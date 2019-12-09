@@ -8,7 +8,7 @@
 
 #include "vec3.hpp"
 
-#include <math.h>
+#include <cmath>
 
 vec3::vec3() {
     this->x = this->y = this->z = 0.0;
@@ -41,7 +41,7 @@ float dot(vec3 a, vec3 b) {
 }
 
 float length(vec3 v) {
-    return sqrt(dot(v,v));
+    return std::sqrt(dot(v,v));
 }
          
 vec3 normalize(vec3 v) {

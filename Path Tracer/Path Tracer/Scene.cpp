@@ -8,7 +8,9 @@
 
 #include "Scene.hpp"
 
-#include <math.h>
+#include <cmath>
+
+#include <stdio.h>
 
 Scene::Scene() {
   
@@ -25,13 +27,18 @@ Scene::Intersection Scene::findIntersection(Ray ray) {
     float disc = b*b - 4*a*c;
     
     if (disc < 0) {
-        return Scene::Intersection(false, vec3());
+        return Scene::Intersection(false, vec3(), vec3());
     }
 
-    float t = (-b - sqrt(disc)) / (2*a);
+    float t = (-b - std::sqrt(disc)) / (2*a);
     if (t < 0) {
-        t = (-b + sqrt(disc)) / (2*a);
+        t = (-b + std::sqrt(disc)) / (2*a);
+        if (t < 0) {
+            return Scene::Intersection(false, vec3(), vec3());
+        }
     }
     
-    return Scene::Intersection(true, ray.origin + t*ray.dir);
+    vec3 pos = ray.origin + t*ray.dir;
+    vec3 normal = normalize(pos - center);
+    return Scene::Intersection(true, pos, normal);
 }
