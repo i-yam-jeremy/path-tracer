@@ -13,6 +13,8 @@
 
 #include "vec2.hpp"
 #include "vec3.hpp"
+#include "Ray.hpp"
+#include "Scene.hpp"
 
 class PathTracer {
 
@@ -21,7 +23,9 @@ public:
     void render(std::string filename, int width, int height);
     
 private:
+    Scene scene;
     vec3 renderPixel(vec2 uv);
+    vec3 renderPath(Ray ray, int bounceCount);
     
 };
 

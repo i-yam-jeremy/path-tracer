@@ -13,6 +13,7 @@ class vec3 {
   
 public:
     float x, y, z;
+    vec3();
     vec3(float a);
     vec3(float x, float y, float z);
     friend vec3 operator+(const vec3 &a, const vec3 &b);
@@ -20,5 +21,9 @@ public:
     friend vec3 operator*(const vec3 &a, const vec3 &b);
     
 };
+
+float dot(vec3 a, vec3 b);
+float length(vec3 v);
+vec3 normalize(vec3 v);
 
 #endif /* vec3_hpp */

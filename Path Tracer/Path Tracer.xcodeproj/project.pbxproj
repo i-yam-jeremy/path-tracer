@@ -12,6 +12,8 @@
 		BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C068239E04F400A9E33F /* PathTracer.cpp */; };
 		BA38C06D239E064900A9E33F /* vec2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C06B239E064900A9E33F /* vec2.cpp */; };
 		BA38C070239E0E5300A9E33F /* vec3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C06E239E0E5300A9E33F /* vec3.cpp */; };
+		BA38C073239E157F00A9E33F /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C071239E157F00A9E33F /* Scene.cpp */; };
+		BA38C076239E173600A9E33F /* Ray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C074239E173600A9E33F /* Ray.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +39,10 @@
 		BA38C06C239E064900A9E33F /* vec2.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vec2.hpp; sourceTree = "<group>"; };
 		BA38C06E239E0E5300A9E33F /* vec3.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vec3.cpp; sourceTree = "<group>"; };
 		BA38C06F239E0E5300A9E33F /* vec3.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vec3.hpp; sourceTree = "<group>"; };
+		BA38C071239E157F00A9E33F /* Scene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Scene.cpp; sourceTree = "<group>"; };
+		BA38C072239E157F00A9E33F /* Scene.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Scene.hpp; sourceTree = "<group>"; };
+		BA38C074239E173600A9E33F /* Ray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Ray.cpp; sourceTree = "<group>"; };
+		BA38C075239E173600A9E33F /* Ray.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Ray.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +78,10 @@
 				BA38C059239DF7C200A9E33F /* main.cpp */,
 				BA38C068239E04F400A9E33F /* PathTracer.cpp */,
 				BA38C069239E04F400A9E33F /* PathTracer.hpp */,
+				BA38C074239E173600A9E33F /* Ray.cpp */,
+				BA38C075239E173600A9E33F /* Ray.hpp */,
+				BA38C071239E157F00A9E33F /* Scene.cpp */,
+				BA38C072239E157F00A9E33F /* Scene.hpp */,
 				BA38C06E239E0E5300A9E33F /* vec3.cpp */,
 				BA38C06F239E0E5300A9E33F /* vec3.hpp */,
 				BA38C06B239E064900A9E33F /* vec2.cpp */,
@@ -139,9 +149,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA38C073239E157F00A9E33F /* Scene.cpp in Sources */,
 				BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */,
 				BA38C06D239E064900A9E33F /* vec2.cpp in Sources */,
 				BA38C067239E00E700A9E33F /* Image.cpp in Sources */,
+				BA38C076239E173600A9E33F /* Ray.cpp in Sources */,
 				BA38C070239E0E5300A9E33F /* vec3.cpp in Sources */,
 				BA38C05A239DF7C200A9E33F /* main.cpp in Sources */,
 			);

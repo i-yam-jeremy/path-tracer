@@ -13,6 +13,7 @@ class vec2 {
   
 public:
     float x, y;
+    vec2();
     vec2(float a);
     vec2(float x, float y);
     friend vec2 operator+(const vec2 &a, const vec2 &b);

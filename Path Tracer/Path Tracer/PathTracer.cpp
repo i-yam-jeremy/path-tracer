@@ -10,10 +10,8 @@
 
 #include "Image.hpp"
 
-#include <stdio.h>
-
 PathTracer::PathTracer() {
-    // TODO
+    
 }
 
 void PathTracer::render(std::string filename, int width, int height) {
@@ -30,5 +28,15 @@ void PathTracer::render(std::string filename, int width, int height) {
 }
 
 vec3 PathTracer::renderPixel(vec2 uv) {
-    return vec3(uv.x,uv.y,0);
+    vec3 camera = vec3(0, 0, -2); // TODO use FOV
+    vec3 ray = normalize(vec3(uv.x, uv.y, 0) - camera);
+    return renderPath(Ray(camera, ray), 0);
+}
+
+vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
+    Scene::Intersection in = this->scene.findIntersection(ray);
+    if (in.intersects) {
+        return vec3(1);
+    }
+    return vec3(0);
 }
