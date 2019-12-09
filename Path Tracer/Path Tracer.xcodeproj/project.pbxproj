@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BA38C05A239DF7C200A9E33F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C059239DF7C200A9E33F /* main.cpp */; };
+		BA38C067239E00E700A9E33F /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C065239E00E700A9E33F /* Image.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,8 @@
 /* Begin PBXFileReference section */
 		BA38C056239DF7C200A9E33F /* Path Tracer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Path Tracer"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA38C059239DF7C200A9E33F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		BA38C065239E00E700A9E33F /* Image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
+		BA38C066239E00E700A9E33F /* Image.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				BA38C059239DF7C200A9E33F /* main.cpp */,
+				BA38C065239E00E700A9E33F /* Image.cpp */,
+				BA38C066239E00E700A9E33F /* Image.hpp */,
 			);
 			path = "Path Tracer";
 			sourceTree = "<group>";
@@ -119,6 +124,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA38C067239E00E700A9E33F /* Image.cpp in Sources */,
 				BA38C05A239DF7C200A9E33F /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
