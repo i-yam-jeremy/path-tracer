@@ -16,11 +16,12 @@ class Scene {
     
 public:
     struct Intersection {
-        Intersection(bool intersects, vec3 pos, vec3 normal, int objectId) : intersects(intersects), pos(pos), normal(normal), objectId(objectId) {}
+        Intersection(bool intersects, vec3 pos, vec3 normal, int objectId, vec3 objectColor) : intersects(intersects), pos(pos), normal(normal), objectId(objectId), objectColor(objectColor) {}
         bool intersects;
         vec3 pos;
         vec3 normal;
         int objectId;
+        vec3 objectColor;
     };
     Scene();
     Intersection findIntersection(Ray ray);

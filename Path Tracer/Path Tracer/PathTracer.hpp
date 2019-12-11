@@ -10,6 +10,7 @@
 #define PathTracer_hpp
 
 #include <string>
+#include <random>
 
 #include "vec2.hpp"
 #include "vec3.hpp"
@@ -24,6 +25,8 @@ public:
     
 private:
     Scene scene;
+    std::random_device rd;
+    std::mt19937 e2;
     vec3 renderPixel(vec2 uv, int height);
     vec3 renderPath(Ray ray, int bounceCount);
     

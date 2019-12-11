@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cmath>
 
 Image::Image(int width, int height) {
     this->width = width;
@@ -49,9 +50,9 @@ void Image::write(std::string filename) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             long index = 3*(y*width + x);
-            int r = 255.0*data[index + 0];
-            int g = 255.0*data[index + 1];
-            int b = 255.0*data[index + 2];
+            int r = 255.0*std::sqrt(data[index + 0]); // sqrt is for gamma correction
+            int g = 255.0*std::sqrt(data[index + 1]);
+            int b = 255.0*std::sqrt(data[index + 2]);
             f << r << " " << g << " " << b << std::endl;
         }
     }
