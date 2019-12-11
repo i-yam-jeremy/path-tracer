@@ -125,11 +125,11 @@ Scene::Intersection Scene::findIntersection(Ray ray) {
     Scene::Intersection in = raySphereIntersection(vec3(-1,-1,-1), 0.5, ray, 2, vec3(1,1,1));
     checkClosestIntersection(in, closestPointDistance, closestIntersection, ray);
     
-    /*in = rayPlaneIntersection(vec3(0,-1,0), vec3(0,1,0), ray, 3, vec3(0,1,0));
+    in = rayPlaneIntersection(vec3(0,-1,0), vec3(0,1,0), ray, 3, vec3(0,1,0));
     checkClosestIntersection(in, closestPointDistance, closestIntersection, ray);
     
     in = rayPlaneIntersection(vec3(0,0,-1), vec3(0,1,0), ray, 4, vec3(1,1,1));
-    checkClosestIntersection(in, closestPointDistance, closestIntersection, ray);*/
+    checkClosestIntersection(in, closestPointDistance, closestIntersection, ray);
     
     objl::Loader loader = *((objl::Loader*)this->loader);
     objl::Mesh mesh = loader.LoadedMeshes[0];
