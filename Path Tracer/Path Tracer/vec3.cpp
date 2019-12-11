@@ -40,6 +40,14 @@ float dot(vec3 a, vec3 b) {
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
+vec3 cross(vec3 a, vec3 b) {
+    return vec3(
+                a.y*b.z - b.y*a.z,
+                -(a.x*b.z - b.x*a.z),
+                a.x*b.y - b.x*a.y
+                );
+}
+
 float length(vec3 v) {
     return std::sqrt(dot(v,v));
 }

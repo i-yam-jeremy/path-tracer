@@ -23,6 +23,7 @@ public:
 };
 
 float dot(vec3 a, vec3 b);
+vec3 cross(vec3 a, vec3 b);
 float length(vec3 v);
 vec3 normalize(vec3 v);
 

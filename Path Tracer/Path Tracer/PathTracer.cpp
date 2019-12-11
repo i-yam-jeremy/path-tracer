@@ -25,11 +25,13 @@ void PathTracer::render(std::string filename, int width, int height) {
         for (int x = 0; x < width; x++) {
             vec2 uv = vec2(2.0*float(x - width/2) / float(height), 2.0*float(y - height/2) / float(height));
             PathTracer *that = this;
-            threads[y*width + x] = std::thread([&image, x, y, uv, &height, &that] {
+            threads[y*width + x] = std::thread([&image, x, y, uv, &height, &width, &that] {
                 image.setColor(x, y, that->renderPixel(uv, height));
+                if (x == 0) {
+                    std::cout << (100.0 * float((y+1)*width) / float(width*height)) << "%" << std::endl;
+                }
             });
         }
-        std::cout << (100.0 * float((y+1)*width) / float(width*height)) << "%" << std::endl;
     }
     
     for (int y = 0; y < height; y++) {
@@ -49,7 +51,7 @@ vec3 PathTracer::renderPixel(vec2 uv, int height) {
     std::uniform_real_distribution<float> dist(-1.0/(height/2), 1.0/(height/2));
     
     vec3 color = vec3(0);
-    int sampleCount = 1000;
+    int sampleCount = 100;
     for (int i = 0; i < sampleCount; i++) {
         vec2 offset = vec2(dist(e2), dist(e2));
         vec3 ray = normalize(vec3(uv.x+offset.x, uv.y+offset.y, 0) - camera);

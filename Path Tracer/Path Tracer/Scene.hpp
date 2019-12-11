@@ -26,6 +26,9 @@ public:
     Scene();
     Intersection findIntersection(Ray ray);
     
+private:
+    void *loader;
+    
 };
 
 #endif /* Scene_hpp */

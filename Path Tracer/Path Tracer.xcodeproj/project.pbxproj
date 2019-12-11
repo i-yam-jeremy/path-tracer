@@ -43,6 +43,7 @@
 		BA38C072239E157F00A9E33F /* Scene.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Scene.hpp; sourceTree = "<group>"; };
 		BA38C074239E173600A9E33F /* Ray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Ray.cpp; sourceTree = "<group>"; };
 		BA38C075239E173600A9E33F /* Ray.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Ray.hpp; sourceTree = "<group>"; };
+		BAD5764E23A1751100194965 /* OBJ_Loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OBJ_Loader.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +89,7 @@
 				BA38C06C239E064900A9E33F /* vec2.hpp */,
 				BA38C065239E00E700A9E33F /* Image.cpp */,
 				BA38C066239E00E700A9E33F /* Image.hpp */,
+				BAD5764E23A1751100194965 /* OBJ_Loader.h */,
 			);
 			path = "Path Tracer";
 			sourceTree = "<group>";
