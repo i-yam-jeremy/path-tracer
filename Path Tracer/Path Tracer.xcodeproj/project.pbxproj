@@ -14,6 +14,8 @@
 		BA38C070239E0E5300A9E33F /* vec3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C06E239E0E5300A9E33F /* vec3.cpp */; };
 		BA38C073239E157F00A9E33F /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C071239E157F00A9E33F /* Scene.cpp */; };
 		BA38C076239E173600A9E33F /* Ray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C074239E173600A9E33F /* Ray.cpp */; };
+		BA6EBB2823A1912900D62793 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2623A1912900D62793 /* Object.cpp */; };
+		BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2923A191BD00D62793 /* Material.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -43,6 +45,10 @@
 		BA38C072239E157F00A9E33F /* Scene.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Scene.hpp; sourceTree = "<group>"; };
 		BA38C074239E173600A9E33F /* Ray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Ray.cpp; sourceTree = "<group>"; };
 		BA38C075239E173600A9E33F /* Ray.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Ray.hpp; sourceTree = "<group>"; };
+		BA6EBB2623A1912900D62793 /* Object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Object.cpp; sourceTree = "<group>"; };
+		BA6EBB2723A1912900D62793 /* Object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Object.hpp; sourceTree = "<group>"; };
+		BA6EBB2923A191BD00D62793 /* Material.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Material.cpp; sourceTree = "<group>"; };
+		BA6EBB2A23A191BD00D62793 /* Material.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Material.hpp; sourceTree = "<group>"; };
 		BAD5764E23A1751100194965 /* OBJ_Loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OBJ_Loader.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,6 +89,10 @@
 				BA38C075239E173600A9E33F /* Ray.hpp */,
 				BA38C071239E157F00A9E33F /* Scene.cpp */,
 				BA38C072239E157F00A9E33F /* Scene.hpp */,
+				BA6EBB2923A191BD00D62793 /* Material.cpp */,
+				BA6EBB2A23A191BD00D62793 /* Material.hpp */,
+				BA6EBB2623A1912900D62793 /* Object.cpp */,
+				BA6EBB2723A1912900D62793 /* Object.hpp */,
 				BA38C06E239E0E5300A9E33F /* vec3.cpp */,
 				BA38C06F239E0E5300A9E33F /* vec3.hpp */,
 				BA38C06B239E064900A9E33F /* vec2.cpp */,
@@ -153,11 +163,13 @@
 			files = (
 				BA38C073239E157F00A9E33F /* Scene.cpp in Sources */,
 				BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */,
+				BA6EBB2823A1912900D62793 /* Object.cpp in Sources */,
 				BA38C06D239E064900A9E33F /* vec2.cpp in Sources */,
 				BA38C067239E00E700A9E33F /* Image.cpp in Sources */,
 				BA38C076239E173600A9E33F /* Ray.cpp in Sources */,
 				BA38C070239E0E5300A9E33F /* vec3.cpp in Sources */,
 				BA38C05A239DF7C200A9E33F /* main.cpp in Sources */,
+				BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

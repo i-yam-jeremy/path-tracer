@@ -38,20 +38,20 @@ Scene::Intersection raySphereIntersection(vec3 center, float radius, Ray ray, in
     float disc = b*b - 4*a*c;
     
     if (disc < 0) {
-        return Scene::Intersection(false, vec3(), vec3(), -1, vec3());
+        return Scene::Intersection(false, vec3(), vec3(), NULL);
     }
 
     float t = (-b - std::sqrt(disc)) / (2*a);
     if (t < 0) {
         t = (-b + std::sqrt(disc)) / (2*a);
         if (t < 0) {
-            return Scene::Intersection(false, vec3(), vec3(), -1, vec3());
+            return Scene::Intersection(false, vec3(), vec3(), NULL);
         }
     }
     
     vec3 pos = ray.origin + t*ray.dir;
     vec3 normal = normalize(pos - center);
-    return Scene::Intersection(true, pos, normal, objectId, objectColor);
+    return Scene::Intersection(true, pos, normal, NULL);
 }
 
 Scene::Intersection rayPlaneIntersection(vec3 normal, vec3 p, Ray ray, int objectId, vec3 objectColor) {
@@ -59,10 +59,10 @@ Scene::Intersection rayPlaneIntersection(vec3 normal, vec3 p, Ray ray, int objec
     float denominator = dot(ray.dir, normal);
     if (std::abs(denominator) > 0.00001) {
         float t = -(dot(ray.origin, normal) + d) / denominator;
-        if (t < 0) return Scene::Intersection(false, vec3(), vec3(), -1, vec3());
-        return Scene::Intersection(true, ray.origin + t*ray.dir, normal, objectId, objectColor);
+        if (t < 0) return Scene::Intersection(false, vec3(), vec3(), NULL);
+        return Scene::Intersection(true, ray.origin + t*ray.dir, normal, NULL);
     }
-    return Scene::Intersection(false, vec3(), vec3(), -1, vec3());
+    return Scene::Intersection(false, vec3(), vec3(), NULL);
 }
 
 float triArea(vec3 a, vec3 b, vec3 c) {
@@ -93,7 +93,7 @@ Scene::Intersection rayTriangleIntersection(
         return in;
     }
     else {
-        return Scene::Intersection(false, vec3(), vec3(), -1, vec3());
+        return Scene::Intersection(false, vec3(), vec3(), NULL);
     }
 }
 
@@ -120,7 +120,7 @@ Scene::Intersection Scene::findIntersection(Ray ray) {
     if (in.intersects) return in;*/
     
     float closestPointDistance = 1000000000.0;
-    Scene::Intersection closestIntersection = Scene::Intersection(false, vec3(), vec3(), -1, vec3());
+    Scene::Intersection closestIntersection = Scene::Intersection(false, vec3(), vec3(), NULL);
     
     Scene::Intersection in = raySphereIntersection(vec3(-1,-1,-1), 0.5, ray, 2, vec3(1,1,1));
     checkClosestIntersection(in, closestPointDistance, closestIntersection, ray);

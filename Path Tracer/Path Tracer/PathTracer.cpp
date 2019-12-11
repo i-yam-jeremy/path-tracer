@@ -8,11 +8,12 @@
 
 #include "PathTracer.hpp"
 
-#include "Image.hpp"
-
 #include <cmath>
 #include <iostream>
 #include <thread>
+
+#include "Image.hpp"
+#include "Object.hpp"
 
 PathTracer::PathTracer() {
     this->e2 = std::mt19937(rd());
@@ -69,33 +70,16 @@ vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
     std::uniform_real_distribution<float> dist(0.0, 1.0);
     Scene::Intersection in = this->scene.findIntersection(ray);
     if (in.intersects) {
-        if (in.objectId == 2) {
-            return in.objectColor*vec3(10); // Light
-        }
-        else if (dist(e2) < 0.25) {
-            return vec3(0);
+        Ray outRay = Ray(vec3(), vec3());
+        vec3 colorScale;
+        bool absorbed;
+        Object *obj = (Object*)in.object;
+        obj->getReflectedRay(ray, in, outRay, colorScale, absorbed);
+        if (absorbed) {
+            return colorScale;
         }
         else {
-            vec3 N = in.normal;
-            std::uniform_real_distribution<float> dist(0, 2.0*M_PI);
-            vec3 color = vec3(0);
-            float theta = dist(e2);
-            float phi = dist(e2);
-            vec3 s = vec3( // random point on sphere
-                           1.0,
-                           theta,
-                           phi
-                           );
-            vec3 pathDir = vec3(
-                                s.x*sin(s.z)*cos(s.y),
-                                s.x*sin(s.z)*sin(s.y),
-                                s.x*cos(s.z)
-                                );
-            pathDir = pathDir + N;
-            pathDir = normalize(pathDir);
-            float lambertReflectanceFactor = dot(N, pathDir);
-            color = color + vec3(lambertReflectanceFactor)*renderPath(Ray(in.pos + 0.000001*N, pathDir), bounceCount+1);
-            return 0.8*color*in.objectColor;
+            return colorScale*renderPath(outRay, bounceCount+1);
         }
     }
     return vec3(0);
