@@ -24,7 +24,7 @@ public:
     
 private:
     Scene scene;
-    vec3 renderPixel(vec2 uv);
+    vec3 renderPixel(vec2 uv, int height);
     vec3 renderPath(Ray ray, int bounceCount);
     
 };
