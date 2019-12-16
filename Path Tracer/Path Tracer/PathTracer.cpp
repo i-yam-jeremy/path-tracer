@@ -53,32 +53,36 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       ray.dir = dir;"
             "       return ray;"
             "   }"
-            /*" uint randState = 1781351;"
-            "   float randUnit() {"
-            "       uint x = randState;"
+            "   float randUnit(uint *randState) {"
+            "       uint x = *randState;"
             "       x ^= x << 13;"
             "       x ^= x >> 17;"
             "       x^= x << 5;"
-            "       randState = x;"
-            "       return float(x) / (uint(1) << 31);"
+            "       *randState = x;"
+            "       return float(x) / (((uint)1) << 31);"
             "   }"
-            "   float rand(float lo, float hi) {"
-            "       return (lo-hi)*randUnit() + lo;"
-            "   }"*/
-            "   float3 renderPath(Ray ray, int bounceCount) {"
-            "       return (float3)(0,0,0);"
+            "   float rand(float lo, float hi, uint *randState) {"
+            "       return (lo-hi)*randUnit(randState) + lo;"
             "   }"
-            "   void kernel render(global const float* vertices, global const float* materials,  const int width, const int height, const int samplesPerPixel, global int* outPixels){       "
-            "       int x = get_global_id(0) % width; "
-            "       int y = get_global_id(0) / width; "
+            "   float3 renderPath(Ray ray, uint *randState, int bounceCount) {"
+            "       return (float3)(rand(0,1,randState),rand(0,1,randState),rand(0,1,randState));"
+            "   }"
+            "   void kernel render(global const float* vertices, global const float* materials, const int width, const int height, const int samplesPerPixel, global float* outPixels){       "
+            "       int x = get_global_id(0);"
+            "       int y = get_global_id(1);"
+            "       uint randState = (x+1)*(y+1);"
             "       float2 uv = (float2)(x - width/2.0, y - height/2.0) / float(height);       "
             "       float3 color = (float3)(0,0,0);"
             "       for (int i = 0; i < samplesPerPixel; i++) {"
             "           float3 camera = (float3)(0, 0, -2);"
             "           float3 rayDir = normalize(camera - (float3)(uv.x, uv.y, 0));"
             "           Ray ray = make_ray(rayDir, camera);"
-            "           color += renderPath(ray, 0);"
+            "           color += renderPath(ray, &randState, 0);"
             "       }"
+            "       int pixelIndex = 3*(y*width + x);"
+            "       outPixels[pixelIndex+0] = 1.0;"
+            "       outPixels[pixelIndex+1] = 0.0;"
+            "       outPixels[pixelIndex+2] = 1.0;"
             "   }                                                                               ";
     
     sources.push_back({kernel_code.c_str(),kernel_code.length()});
@@ -112,23 +116,25 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(3, height);
    kernel_render.setArg(4, 100);
    kernel_render.setArg(5,buffer_outPixels);
-   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width*height),cl::NullRange);
-   queue.finish();
-
+   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
    float *pixels = new float[3*width*height];
    //read result C from the device to array C
-   queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(int)*10,pixels);
+   queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
 
+   queue.finish();
+    
     Image image(width, height);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int index = 3*(y*width + x);
+            std::cout << pixels[index+0] << ", " << pixels[index+1] << ", " << pixels[index+2] << std::endl;
             image.setColor(x, y, vec3(pixels[index+0], pixels[index+1], pixels[index+2]));
         }
     }
     
     image.write(filename);
     
+    delete[] pixels;
 
     /*Image image(width, height);
     const int threadPoolSize = 32;
