@@ -43,8 +43,42 @@ void PathTracer::render(std::string filename, int width, int height) {
     cl::Program::Sources sources;
     
     std::string kernel_code=
-            "   void kernel render(global const float* vertices, global const float* materials, global const int width, global const int height, global int* outPixels){       "
-            "       /*C[get_global_id(0)]=A[get_global_id(0)]+B[get_global_id(0)];*/                 "
+            "   typedef struct ray {"
+            "       float3 dir;"
+            "       float3 origin;"
+            "   } Ray;"
+            "   Ray make_ray(float3 origin, float3 dir) {"
+            "       Ray ray;"
+            "       ray.origin = origin;"
+            "       ray.dir = dir;"
+            "       return ray;"
+            "   }"
+            /*" uint randState = 1781351;"
+            "   float randUnit() {"
+            "       uint x = randState;"
+            "       x ^= x << 13;"
+            "       x ^= x >> 17;"
+            "       x^= x << 5;"
+            "       randState = x;"
+            "       return float(x) / (uint(1) << 31);"
+            "   }"
+            "   float rand(float lo, float hi) {"
+            "       return (lo-hi)*randUnit() + lo;"
+            "   }"*/
+            "   float3 renderPath(Ray ray, int bounceCount) {"
+            "       return (float3)(0,0,0);"
+            "   }"
+            "   void kernel render(global const float* vertices, global const float* materials,  const int width, const int height, const int samplesPerPixel, global int* outPixels){       "
+            "       int x = get_global_id(0) % width; "
+            "       int y = get_global_id(0) / width; "
+            "       float2 uv = (float2)(x - width/2.0, y - height/2.0) / float(height);       "
+            "       float3 color = (float3)(0,0,0);"
+            "       for (int i = 0; i < samplesPerPixel; i++) {"
+            "           float3 camera = (float3)(0, 0, -2);"
+            "           float3 rayDir = normalize(camera - (float3)(uv.x, uv.y, 0));"
+            "           Ray ray = make_ray(rayDir, camera);"
+            "           color += renderPath(ray, 0);"
+            "       }"
             "   }                                                                               ";
     
     sources.push_back({kernel_code.c_str(),kernel_code.length()});
@@ -60,37 +94,43 @@ void PathTracer::render(std::string filename, int width, int height) {
    cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(int)*10);
    cl::Buffer buffer_outPixels(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
 
-   int A[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-   int B[] = {0, 1, 2, 0, 1, 2, 0, 1, 2, 0};
+   float vertices[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+   float materials[] = {0, 1, 2, 0, 1, 2, 0, 1, 2, 0};
 
    //create queue to which we will push commands for the device.
    cl::CommandQueue queue(context,defaultDevice);
 
    //write arrays A and B to the device
-   queue.enqueueWriteBuffer(buffer_A,CL_TRUE,0,sizeof(int)*10,A);
-   queue.enqueueWriteBuffer(buffer_B,CL_TRUE,0,sizeof(int)*10,B);
+   queue.enqueueWriteBuffer(buffer_vertices,CL_TRUE,0,sizeof(vertices),vertices);
+   queue.enqueueWriteBuffer(buffer_materials,CL_TRUE,0,sizeof(materials),materials);
 
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");
    kernel_render.setArg(0,buffer_vertices);
    kernel_render.setArg(1,buffer_materials);
-   kernel_render.setArg(2,buffer_outPixels);
-   kernel_render.setArg(3, width);
-   kernel_render.setArg(4, height);
-   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(10),cl::NullRange);
+   kernel_render.setArg(2, width);
+   kernel_render.setArg(3, height);
+   kernel_render.setArg(4, 100);
+   kernel_render.setArg(5,buffer_outPixels);
+   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width*height),cl::NullRange);
    queue.finish();
 
-   int C[10];
+   float *pixels = new float[3*width*height];
    //read result C from the device to array C
-   queue.enqueueReadBuffer(buffer_C,CL_TRUE,0,sizeof(int)*10,C);
-
-   std::cout<<" result: \n";
-   for(int i=0;i<10;i++){
-       std::cout<<C[i]<<" ";
-   }
-    
+   queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(int)*10,pixels);
 
     Image image(width, height);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = 3*(y*width + x);
+            image.setColor(x, y, vec3(pixels[index+0], pixels[index+1], pixels[index+2]));
+        }
+    }
+    
+    image.write(filename);
+    
+
+    /*Image image(width, height);
     const int threadPoolSize = 32;
     int threadPoolIndex = 0;
     std::thread *threads = new std::thread[threadPoolSize];
@@ -120,7 +160,7 @@ void PathTracer::render(std::string filename, int width, int height) {
 
     //delete[] threads;
     
-    image.write(filename);
+    image.write(filename);*/
 }
 
 vec3 PathTracer::renderPixel(vec2 uv, int height) {
