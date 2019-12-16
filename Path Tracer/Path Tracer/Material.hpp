@@ -9,16 +9,17 @@
 #ifndef Material_hpp
 #define Material_hpp
 
+#include <random>
+
 #include "vec3.hpp"
 #include "Ray.hpp"
-#include "Scene.hpp"
 
 class Material {
 
 public:
     Material();
     Material(vec3 baseColor, vec3 emissionColor, bool emissive, bool metal);
-    void getReflectedRay(Ray ray, Scene::Intersection in, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed);
+    void getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed, std::mt19937 e2);
 
 private:
     vec3 baseColor;

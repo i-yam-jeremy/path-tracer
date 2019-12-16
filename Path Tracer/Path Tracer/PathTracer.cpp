@@ -56,7 +56,7 @@ vec3 PathTracer::renderPixel(vec2 uv, int height) {
     std::uniform_real_distribution<float> dist(-1.0/(height/2), 1.0/(height/2));
     
     vec3 color = vec3(0);
-    int sampleCount = 1000;
+    int sampleCount = 100;
     for (int i = 0; i < sampleCount; i++) {
         vec2 offset = vec2(dist(e2), dist(e2));
         vec3 ray = normalize(vec3(uv.x+offset.x, uv.y+offset.y, 0) - camera);
@@ -67,14 +67,12 @@ vec3 PathTracer::renderPixel(vec2 uv, int height) {
 }
 
 vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
-    std::uniform_real_distribution<float> dist(0.0, 1.0);
     Scene::Intersection in = this->scene.findIntersection(ray);
     if (in.intersects) {
         Ray outRay = Ray(vec3(), vec3());
         vec3 colorScale;
         bool absorbed;
-        Object *obj = (Object*)in.object;
-        obj->getReflectedRay(ray, in, outRay, colorScale, absorbed);
+        in.object->getReflectedRay(ray, in.pos, in.normal, outRay, colorScale, absorbed, e2);
         if (absorbed) {
             return colorScale;
         }
