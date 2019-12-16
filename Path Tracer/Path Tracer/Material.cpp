@@ -8,6 +8,9 @@
 
 #include "Material.hpp"
 
+#include <stdlib.h>
+#include <random>
+
 Material::Material() {
     this->baseColor = vec3(1);
     this->emissionColor = vec3(0);
@@ -22,7 +25,12 @@ Material::Material(vec3 baseColor, vec3 emissionColor, bool emissive, bool metal
     this->metal = metal;
 }
 
-void Material::getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed, std::mt19937 e2) {
+float random(float lo, float hi) {
+    float unit = float(rand()) / RAND_MAX;
+    return (hi-lo)*unit + lo;
+}
+
+void Material::getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed) {
     if (metal) {
         
     }
@@ -31,17 +39,15 @@ void Material::getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &
         outAbsorbed = true;
     }
     else {
-        std::uniform_real_distribution<float> dist(0.0, 1.0);
-        if (dist(e2) < 0.25) {
+        if (random(0,1) < 0.25) {
             outColorScale = vec3(0);
             outAbsorbed = true;
             return;
         }
         else {
             vec3 N = normal;
-            std::uniform_real_distribution<float> dist(0, 2.0*M_PI);
-            float theta = dist(e2);
-            float phi = dist(e2);
+            float theta = random(0,2*M_PI);
+            float phi = random(0,2*M_PI);
             vec3 s = vec3( // random point on sphere
                            1.0,
                            theta,

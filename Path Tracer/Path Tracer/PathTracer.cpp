@@ -16,12 +16,12 @@
 #include "Object.hpp"
 
 PathTracer::PathTracer() {
-    this->e2 = std::mt19937(rd());
+
 }
 
 void PathTracer::render(std::string filename, int width, int height) {
     Image image(width, height);
-    const int threadPoolSize = 128;
+    const int threadPoolSize = 32;
     int threadPoolIndex = 0;
     std::thread *threads = new std::thread[threadPoolSize];
     for (int y = 0; y < height; y++) {
@@ -43,6 +43,10 @@ void PathTracer::render(std::string filename, int width, int height) {
             }
         }
     }
+    
+    for (int i = 0; i < threadPoolIndex; i++) {
+        threads[i].join();
+    }
 
     //delete[] threads;
     
@@ -56,7 +60,7 @@ vec3 PathTracer::renderPixel(vec2 uv, int height) {
     std::uniform_real_distribution<float> dist(-1.0/(height/2), 1.0/(height/2));
     
     vec3 color = vec3(0);
-    int sampleCount = 100;
+    int sampleCount = 10;
     for (int i = 0; i < sampleCount; i++) {
         vec2 offset = vec2(dist(e2), dist(e2));
         vec3 ray = normalize(vec3(uv.x+offset.x, uv.y+offset.y, 0) - camera);
@@ -72,7 +76,7 @@ vec3 PathTracer::renderPath(Ray ray, int bounceCount) {
         Ray outRay = Ray(vec3(), vec3());
         vec3 colorScale;
         bool absorbed;
-        in.object->getReflectedRay(ray, in.pos, in.normal, outRay, colorScale, absorbed, e2);
+        in.object->getReflectedRay(ray, in.pos, in.normal, outRay, colorScale, absorbed);
         if (absorbed) {
             return colorScale;
         }

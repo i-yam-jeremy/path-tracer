@@ -96,9 +96,9 @@ bool Object::intersects(Ray ray, vec3 &outPos, vec3 &outNormal) {
         float t;
         vec3 normal;
         bool intersects = rayTriangleIntersection(
-                                     scaleVertex(0.5, mesh.Vertices[i+0]),
-                                     scaleVertex(0.5, mesh.Vertices[i+1]),
-                                     scaleVertex(0.5, mesh.Vertices[i+2]),
+                                     scaleVertex(0.33, mesh.Vertices[i+0]),
+                                     scaleVertex(0.33, mesh.Vertices[i+1]),
+                                     scaleVertex(0.33, mesh.Vertices[i+2]),
                                      ray,
                                      t, normal);
         if (intersects && t < closestT) {
@@ -118,6 +118,6 @@ bool Object::intersects(Ray ray, vec3 &outPos, vec3 &outNormal) {
     }
 }
 
-void Object::getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed, std::mt19937 e2) {
-    this->mat.getReflectedRay(ray, intersectionPos, normal, outRay, outColorScale, outAbsorbed, e2);
+void Object::getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed) {
+    this->mat.getReflectedRay(ray, intersectionPos, normal, outRay, outColorScale, outAbsorbed);
 }
