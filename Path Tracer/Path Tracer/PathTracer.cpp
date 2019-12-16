@@ -59,10 +59,10 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       x ^= x >> 17;"
             "       x^= x << 5;"
             "       *randState = x;"
-            "       return float(x) / (((uint)1) << 31);"
+            "       return float(x) / 4294967296.0;"
             "   }"
             "   float rand(float lo, float hi, uint *randState) {"
-            "       return (lo-hi)*randUnit(randState) + lo;"
+            "       return (hi-lo)*randUnit(randState) + lo;"
             "   }"
             "   float3 renderPath(Ray ray, uint *randState, int bounceCount) {"
             "       return (float3)(rand(0,1,randState),rand(0,1,randState),rand(0,1,randState));"
@@ -79,10 +79,11 @@ void PathTracer::render(std::string filename, int width, int height) {
             "           Ray ray = make_ray(rayDir, camera);"
             "           color += renderPath(ray, &randState, 0);"
             "       }"
+            "       color /= samplesPerPixel;"
             "       int pixelIndex = 3*(y*width + x);"
-            "       outPixels[pixelIndex+0] = 1.0;"
-            "       outPixels[pixelIndex+1] = 0.0;"
-            "       outPixels[pixelIndex+2] = 1.0;"
+            "       outPixels[pixelIndex+0] = color.x;"
+            "       outPixels[pixelIndex+1] = color.y;"
+            "       outPixels[pixelIndex+2] = color.z ;"
             "   }                                                                               ";
     
     sources.push_back({kernel_code.c_str(),kernel_code.length()});
@@ -114,7 +115,7 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(1,buffer_materials);
    kernel_render.setArg(2, width);
    kernel_render.setArg(3, height);
-   kernel_render.setArg(4, 100);
+   kernel_render.setArg(4, 10);
    kernel_render.setArg(5,buffer_outPixels);
    queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
    float *pixels = new float[3*width*height];
