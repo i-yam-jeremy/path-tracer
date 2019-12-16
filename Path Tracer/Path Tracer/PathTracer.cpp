@@ -11,6 +11,7 @@
 #include <cmath>
 #include <iostream>
 #include <thread>
+#include "cl.hpp"
 
 #include "Image.hpp"
 #include "Object.hpp"
@@ -20,6 +21,75 @@ PathTracer::PathTracer() {
 }
 
 void PathTracer::render(std::string filename, int width, int height) {
+    std::vector<cl::Platform> allPlatforms;
+    cl::Platform::get(&allPlatforms);
+    if (allPlatforms.size() == 0) {
+        std::cout << "No platforms for OpenCL" << std::endl;
+        exit(1);
+    }
+    cl::Platform defaultPlatform = allPlatforms[0];
+    std::cout << "Using platform: " << defaultPlatform.getInfo<CL_PLATFORM_NAME>() << std::endl;
+    //get default device of the default platform
+    std::vector<cl::Device> allDevices;
+    defaultPlatform.getDevices(CL_DEVICE_TYPE_ALL, &allDevices);
+    if(allDevices.size()==0){
+        std::cout<<" No devices found. Check OpenCL installation!\n";
+        exit(1);
+    }
+    cl::Device defaultDevice=allDevices[0];
+    std::cout<< "Using device: "<<defaultDevice.getInfo<CL_DEVICE_NAME>()<<"\n";
+    
+    cl::Context context({defaultDevice});
+    cl::Program::Sources sources;
+    
+    std::string kernel_code=
+            "   void kernel render(global const float* vertices, global const float* materials, global const int width, global const int height, global int* outPixels){       "
+            "       /*C[get_global_id(0)]=A[get_global_id(0)]+B[get_global_id(0)];*/                 "
+            "   }                                                                               ";
+    
+    sources.push_back({kernel_code.c_str(),kernel_code.length()});
+
+    cl::Program program(context,sources);
+    if(program.build({defaultDevice})!=CL_SUCCESS){
+        std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(defaultDevice)<<"\n";
+        exit(1);
+    }
+    
+   // create buffers on the device
+   cl::Buffer buffer_vertices(context,CL_MEM_READ_WRITE,sizeof(int)*10);
+   cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(int)*10);
+   cl::Buffer buffer_outPixels(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
+
+   int A[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+   int B[] = {0, 1, 2, 0, 1, 2, 0, 1, 2, 0};
+
+   //create queue to which we will push commands for the device.
+   cl::CommandQueue queue(context,defaultDevice);
+
+   //write arrays A and B to the device
+   queue.enqueueWriteBuffer(buffer_A,CL_TRUE,0,sizeof(int)*10,A);
+   queue.enqueueWriteBuffer(buffer_B,CL_TRUE,0,sizeof(int)*10,B);
+
+   //alternative way to run the kernel
+   cl::Kernel kernel_render = cl::Kernel(program,"render");
+   kernel_render.setArg(0,buffer_vertices);
+   kernel_render.setArg(1,buffer_materials);
+   kernel_render.setArg(2,buffer_outPixels);
+   kernel_render.setArg(3, width);
+   kernel_render.setArg(4, height);
+   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(10),cl::NullRange);
+   queue.finish();
+
+   int C[10];
+   //read result C from the device to array C
+   queue.enqueueReadBuffer(buffer_C,CL_TRUE,0,sizeof(int)*10,C);
+
+   std::cout<<" result: \n";
+   for(int i=0;i<10;i++){
+       std::cout<<C[i]<<" ";
+   }
+    
+
     Image image(width, height);
     const int threadPoolSize = 32;
     int threadPoolIndex = 0;
