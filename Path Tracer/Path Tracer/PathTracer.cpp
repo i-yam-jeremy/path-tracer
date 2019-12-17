@@ -226,14 +226,14 @@ void PathTracer::render(std::string filename, int width, int height) {
     }
     
     std::vector<float> vertices;
-    vertices.push_back(-0.1);
+    vertices.push_back(-0.5);
     vertices.push_back(0.0);
     vertices.push_back(0.0);
     vertices.push_back(0.0);
     vertices.push_back(0.0);
     vertices.push_back(0.0);
     vertices.push_back(0.0);
-    vertices.push_back(0.1);
+    vertices.push_back(0.5);
     vertices.push_back(0.1);
 
     std::vector<Mat> materials;
@@ -247,7 +247,10 @@ void PathTracer::render(std::string filename, int width, int height) {
         triCount += vbuf.size()/9;
         vertices.insert(vertices.end(), vbuf.begin(), vbuf.end());
         for (int i = 0; i < vbuf.size()/9; i++) {
-            materials.push_back(Mat(0.0, make_cl_float3(1,1,1), make_cl_float3(1,1,1)));
+            float r = i%3 == 0 ? 1.0 : 0.4;
+            float g = i%3 == 1 ? 1.0 : 0.6;
+            float b = i%3 == 2 ? 1.0 : 0.5;
+            materials.push_back(Mat(0.0, make_cl_float3(1,1,1), make_cl_float3(r,g,b)));
         }
     }
 
@@ -271,16 +274,17 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(2, triCount);
    kernel_render.setArg(3, width);
    kernel_render.setArg(4, height);
-   kernel_render.setArg(5, 100);
+   kernel_render.setArg(5, 10);
    kernel_render.setArg(6,buffer_outPixels);
-   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
-   float *pixels = new float[3*width*height];
-   //read result C from the device to array C
-   queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
-
-   queue.finish();
     
-    Image image(width, height);
+   Image image(width, height);
+   float *pixels = new float[3*width*height];
+   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NDRange(64,1));
+   //read result C from the device to array C
+
+    queue.finish();
+   queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+    
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int index = 3*(y*width + x);
