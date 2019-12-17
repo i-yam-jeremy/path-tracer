@@ -190,31 +190,34 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       b.color = colorScale;\n"
             "       return b;\n"
             "   }"
-            "   void kernel render(global const float* vertices, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, global float* outPixels){       "
+            "   void kernel render(global const float* vertices, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, const int sampleIndex, global float* outPixels, global uint* randStates){       "
             "       int x = get_global_id(0);\n"
             "       int y = get_global_id(1);\n"
-            "       uint randState = (x+1)*(y+1);\n"
+            "       uint randState = randStates[y*width + x];\n"
             "       float2 uv = (float2)(x - width/2.0, y - height/2.0) / float(height);       "
             "       float3 color = (float3)(0,0,0);\n"
-            "       for (int i = 0; i < samplesPerPixel; i++) {"
+            "       for (int i = 0; i < 1; i++) {"
             "           float3 camera = (float3)(0, 0, -2);\n"
             "           float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);\n"
             "           Ray ray = make_ray(camera, rayDir);\n"
             "           float3 c = (float3)(1,1,1);\n"
             "           Bounce b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
             "           c *= b.color;\n"
-            "           while (b.hasOutRay) {"
+            "           int bounceCount = 1;\n"
+            "           while (b.hasOutRay && bounceCount < 3) {"
             "               ray = b.outRay;\n"
             "               b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
             "               c *= b.color;\n"
+            "               bounceCount++;\n"
             "           }"
-            "           color += c;\n"
+            "           if (bounceCount < 3) color += c;\n"
             "       }"
             "       color /= samplesPerPixel;\n"
             "       int pixelIndex = 3*(y*width + x);\n"
-            "       outPixels[pixelIndex+0] = color.x;\n"
-            "       outPixels[pixelIndex+1] = color.y;\n"
-            "       outPixels[pixelIndex+2] = color.z;\n"
+            "       outPixels[pixelIndex+0] += color.x;\n"
+            "       outPixels[pixelIndex+1] += color.y;\n"
+            "       outPixels[pixelIndex+2] += color.z;\n"
+            "       randStates[y*width + x] = randState;\n"
             "   }                                                                               ";
     
     sources.push_back({kernel_code.c_str(),kernel_code.length()});
@@ -259,13 +262,24 @@ void PathTracer::render(std::string filename, int width, int height) {
    cl::Buffer buffer_vertices(context,CL_MEM_READ_WRITE,sizeof(float)*vertices.size());
    cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(Mat)*materials.size());
    cl::Buffer buffer_outPixels(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
+   cl::Buffer buffer_randStates(context,CL_MEM_READ_WRITE,sizeof(unsigned int)*width*height);
 
    //create queue to which we will push commands for the device.
    cl::CommandQueue queue(context,defaultDevice);
 
    //write arrays A and B to the device
+   float *pixels = new float[3*width*height]();
+   unsigned int *randStates = new unsigned int[width*height];
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            randStates[y*width + x] = (x+1)*(y+1);
+        }
+    }
    queue.enqueueWriteBuffer(buffer_vertices,CL_TRUE,0,sizeof(float)*vertices.size(),&vertices[0]);
    queue.enqueueWriteBuffer(buffer_materials,CL_TRUE,0,sizeof(Mat)*materials.size(),&materials[0]);
+   queue.enqueueWriteBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+   queue.enqueueWriteBuffer(buffer_randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
+   delete[] randStates;
 
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");
@@ -274,16 +288,19 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(2, triCount);
    kernel_render.setArg(3, width);
    kernel_render.setArg(4, height);
-   kernel_render.setArg(5, 10);
-   kernel_render.setArg(6,buffer_outPixels);
+   kernel_render.setArg(5, 100);
+   kernel_render.setArg(7, buffer_outPixels);
+   kernel_render.setArg(8, buffer_randStates);
     
-   Image image(width, height);
-   float *pixels = new float[3*width*height];
-   queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NDRange(64,1));
-   //read result C from the device to array C
-
-    queue.finish();
-   queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+    Image image(width, height);
+    int samplesPerPixel = 100;
+    for (int i = 0; i < samplesPerPixel; i++) {
+        kernel_render.setArg(6, i);
+        queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
+    }
+    queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+    
+    //queue.finish();
     
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
