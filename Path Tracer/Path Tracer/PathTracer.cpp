@@ -143,14 +143,16 @@ void PathTracer::render(std::string filename, int width, int height) {
             "           float3 B = (float3)(vertices[9*i + 3], vertices[9*i + 4], vertices[9*i + 5]);\n"
             "           float3 C = (float3)(vertices[9*i + 6], vertices[9*i + 7], vertices[9*i + 8]);\n"
             "           Intersection triIn = rayTriangleIntersection(ray, A, B, C, i);\n"
-            "           if (triIn.intersects && triIn.t < in.t) {"
+            //"           if (triIn.intersects && triIn.t < in.t) {"
             "               in = triIn;\n"
-            "           }"
+            //"           }"
             "       }"
+            "       return in;\n"
             "   }"
             "   float3 renderPath(Ray ray, uint *randState, int bounceCount, global const float* vertices, global const Material* materials, const int triCount) {"
             "       Intersection in = closestTriangle(ray, vertices, triCount);\n"
-            "       if (!in.intersects) return (float3)(0,0,0);\n" // Background
+            "       if (!in.intersects) return (float3)(0.5,0,0.5);\n" // Background
+            "       return (float3)(0,1,0);\n" // FIXME
             "       Material mat = materials[in.triIndex];\n"
             "       if (rand(0,1,randState) < mat.emissiveness) return 17.0f*mat.emissionColor;\n"
             "       if (rand(0,1,randState) < 0.25) return (float3)(1,0,0);\n" // Absorbed
@@ -179,8 +181,8 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       float3 color = (float3)(0,0,0);\n"
             "       for (int i = 0; i < samplesPerPixel; i++) {"
             "           float3 camera = (float3)(0, 0, -2);\n"
-            "           float3 rayDir = normalize(camera - (float3)(uv.x, uv.y, 0));\n"
-            "           Ray ray = make_ray(rayDir, camera);\n"
+            "           float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);\n"
+            "           Ray ray = make_ray(camera, rayDir);\n"
             "           color += renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
             "       }"
             "       color /= samplesPerPixel;\n"
@@ -202,14 +204,14 @@ void PathTracer::render(std::string filename, int width, int height) {
         0.0, 0.0, 0.0,
         0.5, 0.0, 0.0,
         0.5, 0.5, 0.0,
-        0.0, 0.0, 0.0,
+        /*0.0, 0.0, 0.0,
         0.0, 0.0, 0.5,
-        0.0, 0.5, 0.5,
+        0.0, 0.5, 0.5,*/
     };
 
     Mat materials[] = {
         Mat(1.0, make_cl_float3(1,1,1), make_cl_float3(0,0,0)),
-        Mat(0.0, make_cl_float3(0,0,0), make_cl_float3(1,1,1)),
+       // Mat(0.0, make_cl_float3(0,0,0), make_cl_float3(1,1,1)),
     };
     
    // create buffers on the device
