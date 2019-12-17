@@ -143,19 +143,36 @@ void PathTracer::render(std::string filename, int width, int height) {
             "           float3 B = (float3)(vertices[9*i + 3], vertices[9*i + 4], vertices[9*i + 5]);\n"
             "           float3 C = (float3)(vertices[9*i + 6], vertices[9*i + 7], vertices[9*i + 8]);\n"
             "           Intersection triIn = rayTriangleIntersection(ray, A, B, C, i);\n"
-            //"           if (triIn.intersects && triIn.t < in.t) {"
+            "           if (triIn.intersects && triIn.t < in.t) {"
             "               in = triIn;\n"
-            //"           }"
+            "           }"
             "       }"
             "       return in;\n"
             "   }"
-            "   float3 renderPath(Ray ray, uint *randState, int bounceCount, global const float* vertices, global const Material* materials, const int triCount) {"
+            "   typedef struct bounce {"
+            "       bool hasOutRay;\n"
+            "       Ray outRay;\n"
+            "       float3 color;\n"
+            "   } Bounce;\n"
+            "   Bounce renderPath(Ray ray, uint *randState, int bounceCount, global const float* vertices, global const Material* materials, const int triCount) {"
+            "       Bounce b;"
             "       Intersection in = closestTriangle(ray, vertices, triCount);\n"
-            "       if (!in.intersects) return (float3)(0.5,0,0.5);\n" // Background
-            "       return (float3)(0,1,0);\n" // FIXME
+            "       if (!in.intersects) {"
+            "           b.hasOutRay = false;\n"
+            "           b.color = (float3)(0,0,0);\n"
+            "           return b;\n" // Background
+            "       }"
             "       Material mat = materials[in.triIndex];\n"
-            "       if (rand(0,1,randState) < mat.emissiveness) return 17.0f*mat.emissionColor;\n"
-            "       if (rand(0,1,randState) < 0.25) return (float3)(1,0,0);\n" // Absorbed
+            "       if (rand(0,1,randState) < mat.emissiveness) {"
+            "           b.hasOutRay = false;"
+            "           b.color = 17.0f*mat.emissionColor;\n"
+            "           return b;\n" // Emitter
+            "       }"
+            "       if (rand(0,1,randState) < 0.25) {"
+            "           b.hasOutRay = false;\n"
+            "           b.color = (float3)(0,0,0);\n"
+            "           return b;\n" // Absorbed
+            "       }"
             "       float3 N = in.normal;\n"
             "       float theta = rand(0, 2*PI, randState);\n"
             "       float phi = rand(0, 2*PI, randState);\n"
@@ -168,10 +185,10 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       float lambertReflectanceFactor = dot(N, pathDir);\n"
             "       Ray reflectedRay = make_ray(in.pos + 0.000001f*N, pathDir);\n"
             "       float3 colorScale = lambertReflectanceFactor*mat.baseColor;\n"
-            // TODO return reflected ray and boolean whether ray is reflected or not (absorbed or emission), so it can be implemented using a non-recursive approach
-    // TODO material at index and calculate absorb chance and reflected ray and emission
-            // TODO make packed material struct on GPU and CPU so it is easier to use
-            "       return colorScale;\n"
+            "       b.hasOutRay = true;\n"
+            "       b.outRay = reflectedRay;\n"
+            "       b.color = colorScale;\n"
+            "       return b;\n"
             "   }"
             "   void kernel render(global const float* vertices, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, global float* outPixels){       "
             "       int x = get_global_id(0);\n"
@@ -183,7 +200,15 @@ void PathTracer::render(std::string filename, int width, int height) {
             "           float3 camera = (float3)(0, 0, -2);\n"
             "           float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);\n"
             "           Ray ray = make_ray(camera, rayDir);\n"
-            "           color += renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+            "           float3 c = (float3)(1,1,1);\n"
+            "           Bounce b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+            "           c *= b.color;\n"
+            "           while (b.hasOutRay) {"
+            "               ray = b.outRay;\n"
+            "               b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+            "               c *= b.color;\n"
+            "           }"
+            "           color += c;\n"
             "       }"
             "       color /= samplesPerPixel;\n"
             "       int pixelIndex = 3*(y*width + x);\n"
@@ -204,14 +229,14 @@ void PathTracer::render(std::string filename, int width, int height) {
         0.0, 0.0, 0.0,
         0.5, 0.0, 0.0,
         0.5, 0.5, 0.0,
-        /*0.0, 0.0, 0.0,
-        0.0, 0.0, 0.5,
-        0.0, 0.5, 0.5,*/
+        0.5, 0.0, 0.0,
+        0.0, -0.5, -0.5,
+        0.0, 0.0, 0.0,
     };
 
     Mat materials[] = {
         Mat(1.0, make_cl_float3(1,1,1), make_cl_float3(0,0,0)),
-       // Mat(0.0, make_cl_float3(0,0,0), make_cl_float3(1,1,1)),
+        Mat(0.0, make_cl_float3(1,1,1), make_cl_float3(1,1,1)),
     };
     
    // create buffers on the device
@@ -233,7 +258,7 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(2, sizeof(vertices)/(3*3*sizeof(float)));
    kernel_render.setArg(3, width);
    kernel_render.setArg(4, height);
-   kernel_render.setArg(5, 100);
+   kernel_render.setArg(5, 1000);
    kernel_render.setArg(6,buffer_outPixels);
    queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
    float *pixels = new float[3*width*height];

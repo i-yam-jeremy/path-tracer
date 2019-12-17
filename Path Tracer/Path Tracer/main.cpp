@@ -10,8 +10,8 @@
 
 #include "PathTracer.hpp"
 
-#define RENDER_WIDTH (1920/8)
-#define RENDER_HEIGHT (1080/8)
+#define RENDER_WIDTH (1920)
+#define RENDER_HEIGHT (1080)
 
 int main(int argc, const char * argv[]) {
     
