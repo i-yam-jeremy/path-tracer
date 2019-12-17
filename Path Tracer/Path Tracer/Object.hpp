@@ -11,6 +11,7 @@
 
 #include <string>
 #include <random>
+#include <vector>
 
 #include "Material.hpp"
 
@@ -20,6 +21,7 @@ public:
     Object(std::string filename, Material mat);
     bool intersects(Ray ray, vec3 &outPos, vec3 &outNormal);
     void getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed);
+    std::vector<float> getVertexBuffer();
   
 private:
     void *loader;

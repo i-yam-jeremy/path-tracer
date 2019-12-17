@@ -225,40 +225,53 @@ void PathTracer::render(std::string filename, int width, int height) {
         exit(1);
     }
     
-    float vertices[] = {
-        0.0, 0.0, 0.0,
-        0.5, 0.0, 0.0,
-        0.5, 0.5, 0.0,
-        0.5, 0.0, 0.0,
-        0.0, -0.5, -0.5,
-        0.0, 0.0, 0.0,
-    };
+    std::vector<float> vertices;
+    vertices.push_back(-0.1);
+    vertices.push_back(0.0);
+    vertices.push_back(0.0);
+    vertices.push_back(0.0);
+    vertices.push_back(0.0);
+    vertices.push_back(0.0);
+    vertices.push_back(0.0);
+    vertices.push_back(0.1);
+    vertices.push_back(0.1);
 
-    Mat materials[] = {
-        Mat(1.0, make_cl_float3(1,1,1), make_cl_float3(0,0,0)),
-        Mat(0.0, make_cl_float3(1,1,1), make_cl_float3(1,1,1)),
-    };
+    std::vector<Mat> materials;
+    materials.push_back(Mat(1.0, make_cl_float3(1,1,1), make_cl_float3(0,0,0)));
+    
+    int triCount = 0;
+    triCount += 1;
+    
+    for (auto obj : this->scene.objects) {
+        std::vector<float> vbuf = obj.getVertexBuffer();
+        triCount += vbuf.size()/9;
+        vertices.insert(vertices.end(), vbuf.begin(), vbuf.end());
+        for (int i = 0; i < vbuf.size()/9; i++) {
+            materials.push_back(Mat(0.0, make_cl_float3(1,1,1), make_cl_float3(1,1,1)));
+        }
+    }
+
     
    // create buffers on the device
-   cl::Buffer buffer_vertices(context,CL_MEM_READ_WRITE,sizeof(vertices));
-   cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(materials));
+   cl::Buffer buffer_vertices(context,CL_MEM_READ_WRITE,sizeof(float)*vertices.size());
+   cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(Mat)*materials.size());
    cl::Buffer buffer_outPixels(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
 
    //create queue to which we will push commands for the device.
    cl::CommandQueue queue(context,defaultDevice);
 
    //write arrays A and B to the device
-   queue.enqueueWriteBuffer(buffer_vertices,CL_TRUE,0,sizeof(vertices),vertices);
-   queue.enqueueWriteBuffer(buffer_materials,CL_TRUE,0,sizeof(materials),materials);
+   queue.enqueueWriteBuffer(buffer_vertices,CL_TRUE,0,sizeof(float)*vertices.size(),&vertices[0]);
+   queue.enqueueWriteBuffer(buffer_materials,CL_TRUE,0,sizeof(Mat)*materials.size(),&materials[0]);
 
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");
    kernel_render.setArg(0,buffer_vertices);
    kernel_render.setArg(1,buffer_materials);
-   kernel_render.setArg(2, sizeof(vertices)/(3*3*sizeof(float)));
+   kernel_render.setArg(2, triCount);
    kernel_render.setArg(3, width);
    kernel_render.setArg(4, height);
-   kernel_render.setArg(5, 1000);
+   kernel_render.setArg(5, 100);
    kernel_render.setArg(6,buffer_outPixels);
    queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
    float *pixels = new float[3*width*height];

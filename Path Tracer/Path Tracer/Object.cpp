@@ -85,6 +85,18 @@ objl::Vertex scaleVertex(float scale, objl::Vertex v) {
     return v;
 }
 
+std::vector<float> Object::getVertexBuffer() {
+    objl::Loader loader = *((objl::Loader*)this->loader);
+    objl::Mesh mesh = loader.LoadedMeshes[0];
+    std::vector<float> vbuf;
+    for (int i = 0; i < mesh.Indices.size(); i++) {
+        vbuf.push_back(0.2*mesh.Vertices[i].Position.X);
+        vbuf.push_back(0.2*mesh.Vertices[i].Position.Y);
+        vbuf.push_back(0.2*mesh.Vertices[i].Position.Z);
+    }
+    return vbuf;
+}
+
 
 bool Object::intersects(Ray ray, vec3 &outPos, vec3 &outNormal) {
     objl::Loader loader = *((objl::Loader*)this->loader);

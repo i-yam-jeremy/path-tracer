@@ -18,6 +18,7 @@
 class Scene {
     
 public:
+    std::vector<Object> objects;
     struct Intersection {
         Intersection(bool intersects, vec3 pos, vec3 normal, Object *object) : intersects(intersects), pos(pos), normal(normal), object(object) {}
         bool intersects;
@@ -29,7 +30,6 @@ public:
     Intersection findIntersection(Ray ray);
     
 private:
-    std::vector<Object> objects;
     
 };
 

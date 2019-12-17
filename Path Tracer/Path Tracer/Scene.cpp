@@ -15,7 +15,6 @@
 #include "Material.hpp"
 
 Scene::Scene() {
-    this->objects.push_back(Object("/Users/i-yam-jeremy/Desktop/test.obj", Material(vec3(1,1,1), vec3(1,1,1), true, false)));
     this->objects.push_back(Object("/Users/i-yam-jeremy/Desktop/test.obj", Material(vec3(1,1,1), vec3(), false, false)));
 }
 
