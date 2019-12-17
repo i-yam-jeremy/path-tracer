@@ -13,6 +13,9 @@
 #include <thread>
 #include "cl.hpp"
 
+#include <chrono>
+#include <thread>
+
 #include "Image.hpp"
 #include "Object.hpp"
 
@@ -190,7 +193,7 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       b.color = colorScale;\n"
             "       return b;\n"
             "   }"
-            "   void kernel render(global const float* vertices, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, const int sampleIndex, global float* outPixels, global uint* randStates){       "
+            "   void kernel render(global const float* vertices, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, global float* outPixels, global uint* randStates){       "
             "       int x = get_global_id(0);\n"
             "       int y = get_global_id(1);\n"
             "       uint randState = randStates[y*width + x];\n"
@@ -204,13 +207,13 @@ void PathTracer::render(std::string filename, int width, int height) {
             "           Bounce b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
             "           c *= b.color;\n"
             "           int bounceCount = 1;\n"
-            "           while (b.hasOutRay && bounceCount < 3) {"
+            "           while (b.hasOutRay && bounceCount < 10) {"
             "               ray = b.outRay;\n"
             "               b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
             "               c *= b.color;\n"
             "               bounceCount++;\n"
             "           }"
-            "           if (bounceCount < 3) color += c;\n"
+            "           if (bounceCount < 10) color += c;\n"
             "       }"
             "       color /= samplesPerPixel;\n"
             "       int pixelIndex = 3*(y*width + x);\n"
@@ -250,10 +253,7 @@ void PathTracer::render(std::string filename, int width, int height) {
         triCount += vbuf.size()/9;
         vertices.insert(vertices.end(), vbuf.begin(), vbuf.end());
         for (int i = 0; i < vbuf.size()/9; i++) {
-            float r = i%3 == 0 ? 1.0 : 0.4;
-            float g = i%3 == 1 ? 1.0 : 0.6;
-            float b = i%3 == 2 ? 1.0 : 0.5;
-            materials.push_back(Mat(0.0, make_cl_float3(1,1,1), make_cl_float3(r,g,b)));
+            materials.push_back(Mat(0.0, make_cl_float3(0,0,0), make_cl_float3(1,1,1)));
         }
     }
 
@@ -281,6 +281,8 @@ void PathTracer::render(std::string filename, int width, int height) {
    queue.enqueueWriteBuffer(buffer_randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
    delete[] randStates;
 
+   int samplesPerPixel = 100;
+    
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");
    kernel_render.setArg(0,buffer_vertices);
@@ -288,15 +290,15 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(2, triCount);
    kernel_render.setArg(3, width);
    kernel_render.setArg(4, height);
-   kernel_render.setArg(5, 100);
-   kernel_render.setArg(7, buffer_outPixels);
-   kernel_render.setArg(8, buffer_randStates);
+   kernel_render.setArg(5, samplesPerPixel);
+   kernel_render.setArg(6, buffer_outPixels);
+   kernel_render.setArg(7, buffer_randStates);
     
     Image image(width, height);
-    int samplesPerPixel = 100;
     for (int i = 0; i < samplesPerPixel; i++) {
-        kernel_render.setArg(6, i);
         queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
+        std::cout << 100.0*float(i+1)/samplesPerPixel << "%" << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
     
