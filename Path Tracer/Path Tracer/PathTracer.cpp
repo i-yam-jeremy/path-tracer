@@ -168,7 +168,7 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       Material mat = materials[in.triIndex];\n"
             "       if (rand(0,1,randState) < mat.emissiveness) {"
             "           b.hasOutRay = false;"
-            "           b.color = 17.0f*mat.emissionColor;\n"
+            "           b.color = 7.0f*mat.emissionColor;\n"
             "           return b;\n" // Emitter
             "       }"
             "       if (rand(0,1,randState) < 0.25) {"
@@ -197,23 +197,18 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       int x = get_global_id(0);\n"
             "       int y = get_global_id(1);\n"
             "       uint randState = randStates[y*width + x];\n"
-            "       float2 uv = (float2)(x - width/2.0, y - height/2.0) / float(height);       "
-            "       float3 color = (float3)(0,0,0);\n"
-            "       for (int i = 0; i < 1; i++) {"
-            "           float3 camera = (float3)(0, 0, -2);\n"
-            "           float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);\n"
-            "           Ray ray = make_ray(camera, rayDir);\n"
-            "           float3 c = (float3)(1,1,1);\n"
-            "           Bounce b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
-            "           c *= b.color;\n"
-            "           int bounceCount = 1;\n"
-            "           while (b.hasOutRay && bounceCount < 10) {"
-            "               ray = b.outRay;\n"
-            "               b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
-            "               c *= b.color;\n"
-            "               bounceCount++;\n"
-            "           }"
-            "           if (bounceCount < 10) color += c;\n"
+            "       float2 uvOffset = (float2)(rand(0,1,&randState), rand(0,1,&randState)) / float(height);\n"
+            "       float2 uv = uvOffset + (float2)(x - width/2.0, y - height/2.0) / float(height);       "
+            "       float3 camera = (float3)(0, 0, -2);\n"
+            "       float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);\n"
+            "       Ray ray = make_ray(camera, rayDir);\n"
+            "       float3 color = (float3)(1,1,1);\n"
+            "       Bounce b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+            "       color *= b.color;\n"
+            "       while (b.hasOutRay) {"
+            "           ray = b.outRay;\n"
+            "           b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+            "           color *= b.color;\n"
             "       }"
             "       color /= samplesPerPixel;\n"
             "       int pixelIndex = 3*(y*width + x);\n"
@@ -248,11 +243,12 @@ void PathTracer::render(std::string filename, int width, int height) {
     int triCount = 0;
     triCount += 1;
     
-    for (auto obj : this->scene.objects) {
+    for (int i = 0; i < this->scene.objects.size(); i++) {
+        Object obj = this->scene.objects[i];
         std::vector<float> vbuf = obj.getVertexBuffer();
         triCount += vbuf.size()/9;
         vertices.insert(vertices.end(), vbuf.begin(), vbuf.end());
-        for (int i = 0; i < vbuf.size()/9; i++) {
+        for (int j = 0; j < vbuf.size()/9; j++) {
             materials.push_back(Mat(0.0, make_cl_float3(0,0,0), make_cl_float3(1,1,1)));
         }
     }
@@ -281,7 +277,7 @@ void PathTracer::render(std::string filename, int width, int height) {
    queue.enqueueWriteBuffer(buffer_randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
    delete[] randStates;
 
-   int samplesPerPixel = 1000;
+   int samplesPerPixel = 100;
     
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");
