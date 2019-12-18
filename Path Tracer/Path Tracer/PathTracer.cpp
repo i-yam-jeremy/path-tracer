@@ -281,7 +281,7 @@ void PathTracer::render(std::string filename, int width, int height) {
    queue.enqueueWriteBuffer(buffer_randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
    delete[] randStates;
 
-   int samplesPerPixel = 100;
+   int samplesPerPixel = 1000;
     
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");
@@ -294,11 +294,12 @@ void PathTracer::render(std::string filename, int width, int height) {
    kernel_render.setArg(6, buffer_outPixels);
    kernel_render.setArg(7, buffer_randStates);
     
+    cl::Event eExecute;
     Image image(width, height);
     for (int i = 0; i < samplesPerPixel; i++) {
-        queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange);
+        queue.enqueueNDRangeKernel(kernel_render,cl::NullRange,cl::NDRange(width, height),cl::NullRange, NULL, &eExecute);
+        eExecute.wait();
         std::cout << 100.0*float(i+1)/samplesPerPixel << "%" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     queue.enqueueReadBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
     
