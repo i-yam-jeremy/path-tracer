@@ -26,10 +26,12 @@ PathTracer::PathTracer() {
 typedef struct __attribute__ ((packed)) material {
     cl_float emissiveness;
     cl_float3 emissionColor;
+    cl_float metalness;
     cl_float3 baseColor;
-    material(cl_float emissiveness, cl_float3 emissionColor, cl_float3 baseColor) {
+    material(cl_float emissiveness, cl_float3 emissionColor, cl_float metalness, cl_float3 baseColor) {
         this->emissiveness = emissiveness;
         this->emissionColor = emissionColor;
+        this->metalness = metalness;
         this->baseColor = baseColor;
     };
 } Mat;
@@ -66,6 +68,7 @@ void PathTracer::render(std::string filename, int width, int height) {
     
     std::string kernel_code=
             "   #define PI 3.1415926536\n"
+            "   float3 reflect(float3 I, float3 N) { return I - 2.0f*dot(N,I)*N; }\n"
             "   typedef struct ray {"
             "       float3 dir;\n"
             "       float3 origin;\n"
@@ -90,6 +93,7 @@ void PathTracer::render(std::string filename, int width, int height) {
             "   typedef struct __attribute__ ((packed)) material {"
             "       float emissiveness;\n"
             "       float3 emissionColor;\n"
+            "       float metalness;\n"
             "       float3 baseColor;\n"
             "   } Material;\n"
             "   typedef struct intersection {"
@@ -176,6 +180,12 @@ void PathTracer::render(std::string filename, int width, int height) {
             "           b.color = (float3)(0,0,0);\n"
             "           return b;\n" // Absorbed
             "       }"
+            "       if (rand(0,1,randState) < mat.metalness) {"
+            "           b.hasOutRay = true;\n"
+            "           b.outRay = make_ray(in.pos, reflect(ray.dir, in.normal));\n"
+            "           b.color = mat.baseColor;\n"
+            "           return b;\n"
+            "       }"
             "       float3 N = in.normal;\n"
             "       float theta = rand(0, 2*PI, randState);\n"
             "       float phi = rand(0, 2*PI, randState);\n"
@@ -238,7 +248,7 @@ void PathTracer::render(std::string filename, int width, int height) {
     vertices.push_back(0.1);
 
     std::vector<Mat> materials;
-    materials.push_back(Mat(1.0, make_cl_float3(1,1,1), make_cl_float3(0,0,0)));
+    materials.push_back(Mat(1.0, make_cl_float3(1,1,1), 0.0, make_cl_float3(0,0,0)));
     
     int triCount = 0;
     triCount += 1;
@@ -249,7 +259,12 @@ void PathTracer::render(std::string filename, int width, int height) {
         triCount += vbuf.size()/9;
         vertices.insert(vertices.end(), vbuf.begin(), vbuf.end());
         for (int j = 0; j < vbuf.size()/9; j++) {
-            materials.push_back(Mat(0.0, make_cl_float3(0,0,0), make_cl_float3(1,1,1)));
+            if (j < 10) {
+                materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 0.0, make_cl_float3(1,1,1)));
+            }
+            else {
+                materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 1.0, make_cl_float3(0.722,0.451,0.2)));
+            }
         }
     }
 
