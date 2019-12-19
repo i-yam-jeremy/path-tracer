@@ -17,6 +17,7 @@
 		BA468AE623A72C1300D6C8CD /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA468AE323A72ABF00D6C8CD /* OpenCL.framework */; };
 		BA6EBB2823A1912900D62793 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2623A1912900D62793 /* Object.cpp */; };
 		BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2923A191BD00D62793 /* Material.cpp */; };
+		BA9A8C3723AA77EB0088C9A1 /* OBJLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA9A8C3523AA77EB0088C9A1 /* OBJLoader.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -52,7 +53,8 @@
 		BA6EBB2723A1912900D62793 /* Object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Object.hpp; sourceTree = "<group>"; };
 		BA6EBB2923A191BD00D62793 /* Material.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Material.cpp; sourceTree = "<group>"; };
 		BA6EBB2A23A191BD00D62793 /* Material.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Material.hpp; sourceTree = "<group>"; };
-		BAD5764E23A1751100194965 /* OBJ_Loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OBJ_Loader.h; sourceTree = "<group>"; };
+		BA9A8C3523AA77EB0088C9A1 /* OBJLoader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OBJLoader.cpp; sourceTree = "<group>"; };
+		BA9A8C3623AA77EB0088C9A1 /* OBJLoader.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = OBJLoader.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,8 +106,9 @@
 				BA38C06C239E064900A9E33F /* vec2.hpp */,
 				BA38C065239E00E700A9E33F /* Image.cpp */,
 				BA38C066239E00E700A9E33F /* Image.hpp */,
-				BAD5764E23A1751100194965 /* OBJ_Loader.h */,
 				BA468AE723A72CB500D6C8CD /* cl.hpp */,
+				BA9A8C3523AA77EB0088C9A1 /* OBJLoader.cpp */,
+				BA9A8C3623AA77EB0088C9A1 /* OBJLoader.hpp */,
 			);
 			path = "Path Tracer";
 			sourceTree = "<group>";
@@ -177,6 +180,7 @@
 			files = (
 				BA38C073239E157F00A9E33F /* Scene.cpp in Sources */,
 				BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */,
+				BA9A8C3723AA77EB0088C9A1 /* OBJLoader.cpp in Sources */,
 				BA6EBB2823A1912900D62793 /* Object.cpp in Sources */,
 				BA38C06D239E064900A9E33F /* vec2.cpp in Sources */,
 				BA38C067239E00E700A9E33F /* Image.cpp in Sources */,

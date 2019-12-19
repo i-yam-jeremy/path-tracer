@@ -11,8 +11,8 @@
 
 #include "PathTracer.hpp"
 
-#define RENDER_WIDTH (1920/2)
-#define RENDER_HEIGHT (1080/2)
+#define RENDER_WIDTH (1920/4)
+#define RENDER_HEIGHT (1080/4)
 
 int main(int argc, const char * argv[]) {
     std::chrono::milliseconds startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());

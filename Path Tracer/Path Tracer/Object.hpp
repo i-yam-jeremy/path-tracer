@@ -14,17 +14,17 @@
 #include <vector>
 
 #include "Material.hpp"
+#include "OBJLoader.hpp"
 
 class Object {
     
 public:
     Object(std::string filename, Material mat);
-    bool intersects(Ray ray, vec3 &outPos, vec3 &outNormal);
-    void getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed);
+    ~Object();
     std::vector<float> getVertexBuffer();
   
 private:
-    void *loader;
+    OBJ *obj;
     Material mat;
     
 };
