@@ -18,6 +18,7 @@ class Scene {
 public:
     std::vector<Object*> objects;
     Scene();
+    ~Scene();
     
 private:
     
