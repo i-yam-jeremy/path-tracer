@@ -17,7 +17,7 @@ class PathTracer {
 
 public:
     PathTracer(Scene *scene);
-    void render(std::string filename, int width, int height, int samplesPerPixel);
+    void render(std::string filename, int platformIndex, int deviceIndex, int width, int height, int samplesPerPixel);
 private:
     Scene *scene;
     
