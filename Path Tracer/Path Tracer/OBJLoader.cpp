@@ -49,14 +49,24 @@ void readFace(std::vector<float> &vertices, std::vector<float> &indexedVertices,
         // TODO error/exception
     }
     
-    if (params.size() > 4) {
-        std::cout << "Only triangles currently supported" << std::endl;
+    if (params.size() > 5) {
+        std::cout << "Only triangles and quads are supported. Please remove n-gons from your mesh." << std::endl;
         exit(1);
     }
 
-    for (int i = 0; i < params.size()-1; i++) {
+    std::vector<long> vIndices;
+    for (int i = 0; i < params.size(); i++) {
         std::vector<std::string> vertexData = split(params[i+1], '/');
-        long vIndex = atoi(vertexData[0].c_str()) - 1;
+        vIndices.push_back(atoi(vertexData[0].c_str()) - 1);
+    }
+    if (params.size() == 5) { // Quad
+        // Convert quad v1,v2,v3,v4 into triangles v1,v2,v3 and v3,v4,v1
+        vIndices.insert(vIndices.begin() + 3, vIndices[2]);
+        vIndices.insert(vIndices.end(), vIndices[0]);
+    }
+    
+    for (int i = 0; i < vIndices.size(); i++) {
+        long vIndex = vIndices[i];
         vertices.push_back(indexedVertices[3*vIndex+0]);
         vertices.push_back(indexedVertices[3*vIndex+1]);
         vertices.push_back(indexedVertices[3*vIndex+2]);
