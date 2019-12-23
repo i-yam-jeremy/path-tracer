@@ -55,7 +55,7 @@ void readFace(std::vector<float> &vertices, std::vector<float> &indexedVertices,
     }
 
     std::vector<long> vIndices;
-    for (int i = 0; i < params.size(); i++) {
+    for (int i = 0; i < params.size()-1; i++) {
         std::vector<std::string> vertexData = split(params[i+1], '/');
         vIndices.push_back(atoi(vertexData[0].c_str()) - 1);
     }
