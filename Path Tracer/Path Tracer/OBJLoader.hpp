@@ -25,8 +25,12 @@ class OBJ {
          Returns the vertex data stored as x,y,z components in a float vector.
          */
         std::vector<float>& getVertexBuffer();
+        std::vector<float>& getTexCoordBuffer();
+        std::vector<float>& getNormalBuffer();
     private:
         std::vector<float> vertices;
+        std::vector<float> texCoords;
+        std::vector<float> normals;
 };
 
 #endif /* OBJLoader_hpp */

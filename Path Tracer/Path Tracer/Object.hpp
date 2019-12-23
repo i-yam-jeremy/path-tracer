@@ -20,6 +20,8 @@ public:
     Object(std::string filename, Material material);
     ~Object();
     std::vector<float> getVertexBuffer();
+    std::vector<float> getTexCoordBuffer();
+    std::vector<float> getNormalBuffer();
     Material getMaterial();
   
 private:

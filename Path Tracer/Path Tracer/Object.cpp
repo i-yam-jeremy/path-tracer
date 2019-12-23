@@ -21,6 +21,14 @@ std::vector<float> Object::getVertexBuffer() {
     return this->obj->getVertexBuffer();
 }
 
+std::vector<float> Object::getTexCoordBuffer() {
+    return this->obj->getTexCoordBuffer();
+}
+
+std::vector<float> Object::getNormalBuffer() {
+    return this->obj->getNormalBuffer();
+}
+
 Material Object::getMaterial() {
     return material;
 }

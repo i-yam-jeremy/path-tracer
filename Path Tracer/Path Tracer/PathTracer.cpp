@@ -42,13 +42,15 @@ cl::Device getDevice(int platformIndex, int deviceIndex) {
 }
 
 struct CLBufferCollection {
-    cl::Buffer vertices, materials, outPixels, randStates;
+    cl::Buffer vertices, texCoords, normals, materials, outPixels, randStates;
 };
 
-CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, int width, int height, std::vector<float> vertices, std::vector<Material> materials) {
+CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, int width, int height, std::vector<float> vertices, std::vector<float> texCoords, std::vector<float> normals, std::vector<Material> materials) {
     CLBufferCollection bc;
     
     bc.vertices = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*vertices.size());
+    bc.texCoords = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*texCoords.size());
+    bc.normals = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*normals.size());
     bc.materials = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(Material)*materials.size());
     bc.outPixels = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
     bc.randStates = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(unsigned int)*width*height);
@@ -63,6 +65,8 @@ CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, 
     }
 
     queue.enqueueWriteBuffer(bc.vertices,CL_TRUE,0,sizeof(float)*vertices.size(),&vertices[0]);
+    queue.enqueueWriteBuffer(bc.texCoords,CL_TRUE,0,sizeof(float)*texCoords.size(),&texCoords[0]);
+    queue.enqueueWriteBuffer(bc.normals,CL_TRUE,0,sizeof(float)*normals.size(),&normals[0]);
     queue.enqueueWriteBuffer(bc.materials,CL_TRUE,0,sizeof(Material)*materials.size(),&materials[0]);
     queue.enqueueWriteBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
     queue.enqueueWriteBuffer(bc.randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
@@ -106,6 +110,7 @@ std::string kernel_code=
 "   typedef struct intersection {"
 "       float t;\n"
 "       float3 pos;\n"
+"       float2 texCoord;\n"
 "       float3 normal;\n"
 "       int triIndex;\n"
 "       bool intersects;\n"
@@ -113,7 +118,7 @@ std::string kernel_code=
 "   float triArea(float3 A, float3 B, float3 C) {"
 "       return 0.5*length(cross(B-A, C-A));\n"
 "   }"
-"   Intersection rayTriangleIntersection(Ray ray, float3 A, float3 B, float3 C, int triIndex) {"
+"   Intersection rayTriangleIntersection(Ray ray, float3 A, float3 B, float3 C, float2 tcA, float2 tcB, float2 tcC, float3 nA, float3 nB, float3 nC, int triIndex) {"
 "       Intersection notIntersection;\n"
 "       notIntersection.t = 10000000000.0;\n"
 "       notIntersection.pos = (float3)(0,0,0);\n"
@@ -134,18 +139,22 @@ std::string kernel_code=
 "       float aA = triArea(pos, B, C);\n"
 "       float bA = triArea(pos, A, C);\n"
 "       float cA = triArea(pos, A, B);\n"
+"       float alpha = aA / fullTriArea;\n"
+"       float beta = bA / fullTriArea;\n"
+"       float gamma = cA / fullTriArea;\n"
 "       if (fabs(fullTriArea - (aA+bA+cA)) < 0.0001 && fullTriArea > 0.0001) {"
 "           Intersection in;\n"
 "           in.t = t;\n"
 "           in.pos = pos;\n"
-"           in.normal = N;\n"
+"           in.texCoord = alpha*tcA + beta*tcB + gamma*tcC;\n"
+"           in.normal = N;//normalize(alpha*nA + beta*nB + gamma*nC);\n"
 "           in.triIndex = triIndex;\n"
 "           in.intersects = true;\n"
 "           return in;\n"
 "       }"
 "       return notIntersection;\n"
 "   }"
-"   Intersection closestTriangle(Ray ray, global const float* vertices, const int triCount) {"
+"   Intersection closestTriangle(Ray ray, global const float* vertices, global const float* texCoords, global const float* normals, const int triCount) {"
 "       Intersection in;\n"
 "       in.t = 10000000000.0;\n"
 "       in.pos = (float3)(0,0,0);\n"
@@ -156,7 +165,13 @@ std::string kernel_code=
 "           float3 A = (float3)(vertices[9*i + 0], vertices[9*i + 1], vertices[9*i + 2]);\n"
 "           float3 B = (float3)(vertices[9*i + 3], vertices[9*i + 4], vertices[9*i + 5]);\n"
 "           float3 C = (float3)(vertices[9*i + 6], vertices[9*i + 7], vertices[9*i + 8]);\n"
-"           Intersection triIn = rayTriangleIntersection(ray, A, B, C, i);\n"
+"           float2 tcA = (float2)(texCoords[6*i + 0], texCoords[6*i + 1]);\n"
+"           float2 tcB = (float2)(texCoords[6*i + 2], texCoords[6*i + 3]);\n"
+"           float2 tcC = (float2)(texCoords[6*i + 4], texCoords[6*i + 5]);\n"
+"           float3 nA = (float3)(normals[9*i + 0], normals[9*i + 1], normals[9*i + 2]);\n"
+"           float3 nB = (float3)(normals[9*i + 3], normals[9*i + 4], normals[9*i + 5]);\n"
+"           float3 nC = (float3)(normals[9*i + 6], normals[9*i + 7], normals[9*i + 8]);\n"
+"           Intersection triIn = rayTriangleIntersection(ray, A, B, C, tcA, tcB, tcC, nA, nB, nC, i);\n"
 "           if (triIn.intersects && triIn.t < in.t) {"
 "               in = triIn;\n"
 "           }"
@@ -168,15 +183,16 @@ std::string kernel_code=
 "       Ray outRay;\n"
 "       float3 color;\n"
 "   } Bounce;\n"
-"   Bounce renderPath(Ray ray, uint *randState, int bounceCount, global const float* vertices, global const Material* materials, const int triCount) {"
+"   Bounce renderPath(Ray ray, uint *randState, int bounceCount, global const float* vertices, global const float* texCoords, global const float* normals, global const Material* materials, const int triCount) {"
 "       Bounce b;"
-"       Intersection in = closestTriangle(ray, vertices, triCount);\n"
+"       Intersection in = closestTriangle(ray, vertices, texCoords, normals, triCount);\n"
 "       if (!in.intersects) {"
 "           b.hasOutRay = false;\n"
-"           b.color = (float3)(0,0,0);\n"
+"           b.color = (float3)(0,1,0);\n"
 "           return b;\n" // Background
 "       }"
 "       Material mat = materials[in.triIndex];\n"
+"       b.color = mat.emissionColor; b.hasOutRay = false; return b; \n"
 "       if (rand(0,1,randState) < mat.emissiveness) {"
 "           b.hasOutRay = false;"
 "           b.color = 15.0f*mat.emissionColor;\n"
@@ -210,7 +226,7 @@ std::string kernel_code=
 "       b.color = colorScale;\n"
 "       return b;\n"
 "   }"
-"   void kernel render(global const float* vertices, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, global float* outPixels, global uint* randStates){       "
+"   void kernel render(global const float* vertices, global const float* texCoords, global const float* normals, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, global float* outPixels, global uint* randStates){       "
 "       int x = get_global_id(0);\n"
 "       int y = get_global_id(1);\n"
 "       uint randState = randStates[y*width + x];\n"
@@ -220,11 +236,11 @@ std::string kernel_code=
 "       float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);\n"
 "       Ray ray = make_ray(camera, rayDir);\n"
 "       float3 color = (float3)(1,1,1);\n"
-"       Bounce b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+"       Bounce b = renderPath(ray, &randState, 0, vertices, texCoords, normals, materials, triCount);\n"
 "       color *= b.color;\n"
 "       while (b.hasOutRay) {"
 "           ray = b.outRay;\n"
-"           b = renderPath(ray, &randState, 0, vertices, materials, triCount);\n"
+"           b = renderPath(ray, &randState, 0, vertices, texCoords, normals, materials, triCount);\n"
 "           color *= b.color;\n"
 "       }"
 "       color /= samplesPerPixel;\n"
@@ -248,12 +264,16 @@ cl::Program buildProgram(cl::Context context, cl::Device device) {
     return program;
 }
 
-void processObjects(std::vector<Object*> objects, std::vector<float> *vertices, std::vector<Material> *materials, int *triCount) {
+void processObjects(std::vector<Object*> objects, std::vector<float> *vertices, std::vector<float> *texCoords, std::vector<float> *normals, std::vector<Material> *materials, int *triCount) {
     for (int i = 0; i < objects.size(); i++) {
         Object *obj = objects[i];
         std::vector<float> vbuf = obj->getVertexBuffer();
         *triCount += vbuf.size()/9;
         vertices->insert(vertices->end(), vbuf.begin(), vbuf.end());
+        std::vector<float> texCoordBuf = obj->getTexCoordBuffer();
+        texCoords->insert(texCoords->end(), texCoordBuf.begin(), texCoordBuf.end());
+        std::vector<float> normalBuf = obj->getNormalBuffer();
+        normals->insert(normals->end(), normalBuf.begin(), normalBuf.end());
         for (int j = 0; j < vbuf.size()/9; j++) {
             materials->push_back(obj->getMaterial());
         }
@@ -264,13 +284,15 @@ cl::Kernel createRenderKernel(cl::Program program, CLBufferCollection bc, int tr
     cl::Kernel render(program, "render");
     
     render.setArg(0, bc.vertices);
-    render.setArg(1, bc.materials);
-    render.setArg(2, triCount);
-    render.setArg(3, width);
-    render.setArg(4, height);
-    render.setArg(5, samplesPerPixel);
-    render.setArg(6, bc.outPixels);
-    render.setArg(7, bc.randStates);
+    render.setArg(1, bc.texCoords);
+    render.setArg(2, bc.normals);
+    render.setArg(3, bc.materials);
+    render.setArg(4, triCount);
+    render.setArg(5, width);
+    render.setArg(6, height);
+    render.setArg(7, samplesPerPixel);
+    render.setArg(8, bc.outPixels);
+    render.setArg(9, bc.randStates);
     
     return render;
 }
@@ -310,16 +332,16 @@ void PathTracer::render(std::string filename, int platformIndex, int deviceIndex
     
     cl::Program program = buildProgram(context, device);
     
-    std::vector<float> vertices;
+    std::vector<float> vertices, texCoords, normals;
     std::vector<Material> materials;
     int triCount = 0;
-    processObjects(this->scene->getObjects(), &vertices, &materials, &triCount);
+    processObjects(this->scene->getObjects(), &vertices, &texCoords, &normals, &materials, &triCount);
 
 
    //create queue to which we will push commands for the device.
    cl::CommandQueue queue(context, device);
     
-    CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, materials);
+    CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, texCoords, normals, materials);
     
     cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
     runKernel(queue, render, width, height, samplesPerPixel);
