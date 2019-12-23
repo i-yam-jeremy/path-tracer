@@ -16,12 +16,13 @@
 class Scene {
     
 public:
-    std::vector<Object*> objects;
     Scene();
     ~Scene();
+    void addObject(Object* obj);
+    std::vector<Object*> getObjects();
     
 private:
-    
+    std::vector<Object*> objects;
 };
 
 #endif /* Scene_hpp */

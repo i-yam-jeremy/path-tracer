@@ -10,16 +10,15 @@
 #define Object_hpp
 
 #include <string>
-#include <random>
-#include <vector>
 
 #include "Material.hpp"
+#include "vec3.hpp"
 #include "OBJLoader.hpp"
 
 class Object {
     
 public:
-    Object(std::string filename, Material mat);
+    Object(std::string filename, Material mat, vec3 pos);
     ~Object();
     std::vector<float> getVertexBuffer();
   

@@ -8,10 +8,8 @@
 
 #include "Object.hpp"
 
-#include <iostream>
-
-Object::Object(std::string filename, Material mat) {
-    this->obj = new OBJ(filename);
+Object::Object(std::string filename, Material mat, vec3 pos) {
+    this->obj = new OBJ(filename, pos);
     // TODO load mesh
     this->mat = mat;
 }

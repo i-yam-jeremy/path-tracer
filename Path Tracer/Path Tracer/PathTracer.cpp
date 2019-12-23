@@ -8,19 +8,14 @@
 
 #include "PathTracer.hpp"
 
-#include <cmath>
 #include <iostream>
-#include <thread>
 #include "cl.hpp"
-
-#include <chrono>
-#include <thread>
 
 #include "Image.hpp"
 #include "Object.hpp"
 
-PathTracer::PathTracer() {
-
+PathTracer::PathTracer(Scene scene) {
+    this->scene = scene;
 }
 
 typedef struct __attribute__ ((packed)) material {
@@ -44,7 +39,7 @@ cl_float3 make_cl_float3(float x, float y, float z) {
     return v;
 }
 
-void PathTracer::render(std::string filename, int width, int height) {
+void PathTracer::render(std::string filename, int width, int height, int samplesPerPixel) {
     std::vector<cl::Platform> allPlatforms;
     cl::Platform::get(&allPlatforms);
     if (allPlatforms.size() == 0) {
@@ -172,7 +167,7 @@ void PathTracer::render(std::string filename, int width, int height) {
             "       Material mat = materials[in.triIndex];\n"
             "       if (rand(0,1,randState) < mat.emissiveness) {"
             "           b.hasOutRay = false;"
-            "           b.color = 7.0f*mat.emissionColor;\n"
+            "           b.color = 15.0f*mat.emissionColor;\n"
             "           return b;\n" // Emitter
             "       }"
             "       if (rand(0,1,randState) < 0.25) {"
@@ -237,24 +232,12 @@ void PathTracer::render(std::string filename, int width, int height) {
     }
     
     std::vector<float> vertices;
-    vertices.push_back(-0.5);
-    vertices.push_back(0.0);
-    vertices.push_back(0.0);
-    vertices.push_back(0.0);
-    vertices.push_back(0.0);
-    vertices.push_back(0.0);
-    vertices.push_back(0.0);
-    vertices.push_back(0.5);
-    vertices.push_back(0.1);
-
     std::vector<Mat> materials;
-    materials.push_back(Mat(1.0, make_cl_float3(1,1,1), 0.0, make_cl_float3(0,0,0)));
-    
     int triCount = 0;
-    triCount += 1;
     
-    for (int i = 0; i < this->scene.objects.size(); i++) {
-        Object *obj = this->scene.objects[i];
+    std::vector<Object*> objects = this->scene.getObjects();
+    for (int i = 0; i < objects.size(); i++) {
+        Object *obj = objects[i];
         std::vector<float> vbuf = obj->getVertexBuffer();
         std::cout << "Vbuf Size: " << vbuf.size() << std::endl;
         triCount += vbuf.size()/9;
@@ -263,8 +246,24 @@ void PathTracer::render(std::string filename, int width, int height) {
             if (i == 0) {
                 materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 0.0, make_cl_float3(1,1,1)));
             }
-            else {
+            else if (i == 1) {
                 materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 1.0, make_cl_float3(0.722,0.451,0.2)));
+            }
+            else if (i == 2) {
+                materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 1.0, make_cl_float3(0.3,0.3,0.8)));
+            }
+            else if (i == 3) {
+                materials.push_back(Mat(1.0, make_cl_float3(0.2,0.2,0.8), 0.0, make_cl_float3(0,0,0)));
+            }
+            else if (i == 4) {
+                materials.push_back(Mat(1.0, make_cl_float3(0.2,0.8,0.2), 0.0, make_cl_float3(0,0,0)));
+            }
+            else if (i == 5) {
+                materials.push_back(Mat(1.0, make_cl_float3(0.8,0.2,0.2), 0.0, make_cl_float3(0,0,0)));
+            }
+            else {
+                std::cout << "No assignmed material" << std::endl;
+                exit(1);
             }
         }
     }
@@ -292,8 +291,6 @@ void PathTracer::render(std::string filename, int width, int height) {
    queue.enqueueWriteBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
    queue.enqueueWriteBuffer(buffer_randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
    delete[] randStates;
-
-   int samplesPerPixel = 10;
     
    //alternative way to run the kernel
    cl::Kernel kernel_render = cl::Kernel(program,"render");

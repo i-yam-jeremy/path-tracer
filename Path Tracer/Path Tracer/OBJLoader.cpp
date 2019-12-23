@@ -28,13 +28,17 @@ std::vector<std::string> split(std::string s, char delim) {
     return split;
 }
 
-void readVertex(std::vector<float> &indexedVertices, std::vector<std::string> params) {
+void readVertex(std::vector<float> &indexedVertices, std::vector<std::string> params, vec3 pos) {
     if (params.size() != 4 && params.size() != 5) {
         //TODO error/exception
     }
-    indexedVertices.push_back(atof(params[1].c_str()));
-    indexedVertices.push_back(atof(params[2].c_str()));
-    indexedVertices.push_back(atof(params[3].c_str()));
+    
+    float x = atof(params[1].c_str());
+    float y = atof(params[2].c_str());
+    float z = atof(params[3].c_str());
+    indexedVertices.push_back(x + pos.x);
+    indexedVertices.push_back(y + pos.y);
+    indexedVertices.push_back(z + pos.z);
     if (params.size() == 5) {
         indexedVertices.push_back(atof(params[4].c_str()));
     }
@@ -52,23 +56,21 @@ void readFace(std::vector<float> &vertices, std::vector<float> &indexedVertices,
 
     for (int i = 0; i < params.size()-1; i++) {
         std::vector<std::string> vertexData = split(params[i+1], '/');
-        long vIndex = atoi(vertexData[0].c_str());
+        long vIndex = atoi(vertexData[0].c_str()) - 1;
         vertices.push_back(indexedVertices[3*vIndex+0]);
         vertices.push_back(indexedVertices[3*vIndex+1]);
         vertices.push_back(indexedVertices[3*vIndex+2]);
     }
 }
 
-OBJ::OBJ(std::string filename) {
+OBJ::OBJ(std::string filename, vec3 pos) {
     std::ifstream file(filename);
     std::string line;
     std::vector<float> indexedVertices;
-    int i = 0;
     while (std::getline(file, line)) {
-        //std::cout << ++i << ", " << this->vertices.size() << std::endl;
         auto params = split(line, ' ');
         if (params[0] == "v") {
-            readVertex(indexedVertices, params);
+            readVertex(indexedVertices, params, pos);
         }
         else if (params[0] == "f") {
             readFace(this->vertices, indexedVertices, params);
