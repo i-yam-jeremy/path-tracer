@@ -12,19 +12,19 @@
 #include <string>
 
 #include "Material.hpp"
-#include "vec3.hpp"
 #include "OBJLoader.hpp"
 
 class Object {
     
 public:
-    Object(std::string filename, Material mat, vec3 pos);
+    Object(std::string filename, Material material);
     ~Object();
     std::vector<float> getVertexBuffer();
+    Material getMaterial();
   
 private:
     OBJ *obj;
-    Material mat;
+    Material material;
     
 };
 

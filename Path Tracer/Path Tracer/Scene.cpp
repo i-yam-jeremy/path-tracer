@@ -8,9 +8,7 @@
 
 #include "Scene.hpp"
 
-Scene::Scene() {
-
-}
+Scene::Scene() {}
 
 Scene::~Scene() {
     for (auto obj : this->objects) {

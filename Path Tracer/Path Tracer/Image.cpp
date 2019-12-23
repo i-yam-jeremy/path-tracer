@@ -31,11 +31,11 @@ float clamp(float x, float lo, float hi) {
     return std::max(lo, std::min(x, hi));
 }
 
-void Image::setColor(int x, int y, vec3 c) {
+void Image::setColor(int x, int y, float r, float g, float b) {
     long index = 3*(y*width + x);
-    this->data[index + 0] = clamp(c.x, 0.0, 1.0);
-    this->data[index + 1] = clamp(c.y, 0.0, 1.0);
-    this->data[index + 2] = clamp(c.z, 0.0, 1.0);
+    this->data[index + 0] = clamp(r, 0.0, 1.0);
+    this->data[index + 1] = clamp(g, 0.0, 1.0);
+    this->data[index + 2] = clamp(b, 0.0, 1.0);
     
 }
 

@@ -8,10 +8,9 @@
 
 #include "Object.hpp"
 
-Object::Object(std::string filename, Material mat, vec3 pos) {
-    this->obj = new OBJ(filename, pos);
-    // TODO load mesh
-    this->mat = mat;
+Object::Object(std::string filename, Material material) {
+    this->obj = new OBJ(filename);
+    this->material = material;
 }
 
 Object::~Object() {
@@ -20,4 +19,8 @@ Object::~Object() {
 
 std::vector<float> Object::getVertexBuffer() {
     return this->obj->getVertexBuffer();
+}
+
+Material Object::getMaterial() {
+    return material;
 }

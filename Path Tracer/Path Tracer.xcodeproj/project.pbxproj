@@ -10,10 +10,7 @@
 		BA38C05A239DF7C200A9E33F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C059239DF7C200A9E33F /* main.cpp */; };
 		BA38C067239E00E700A9E33F /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C065239E00E700A9E33F /* Image.cpp */; };
 		BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C068239E04F400A9E33F /* PathTracer.cpp */; };
-		BA38C06D239E064900A9E33F /* vec2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C06B239E064900A9E33F /* vec2.cpp */; };
-		BA38C070239E0E5300A9E33F /* vec3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C06E239E0E5300A9E33F /* vec3.cpp */; };
 		BA38C073239E157F00A9E33F /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C071239E157F00A9E33F /* Scene.cpp */; };
-		BA38C076239E173600A9E33F /* Ray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA38C074239E173600A9E33F /* Ray.cpp */; };
 		BA468AE623A72C1300D6C8CD /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA468AE323A72ABF00D6C8CD /* OpenCL.framework */; };
 		BA6EBB2823A1912900D62793 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2623A1912900D62793 /* Object.cpp */; };
 		BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2923A191BD00D62793 /* Material.cpp */; };
@@ -39,14 +36,8 @@
 		BA38C066239E00E700A9E33F /* Image.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
 		BA38C068239E04F400A9E33F /* PathTracer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PathTracer.cpp; sourceTree = "<group>"; };
 		BA38C069239E04F400A9E33F /* PathTracer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PathTracer.hpp; sourceTree = "<group>"; };
-		BA38C06B239E064900A9E33F /* vec2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vec2.cpp; sourceTree = "<group>"; };
-		BA38C06C239E064900A9E33F /* vec2.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vec2.hpp; sourceTree = "<group>"; };
-		BA38C06E239E0E5300A9E33F /* vec3.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vec3.cpp; sourceTree = "<group>"; };
-		BA38C06F239E0E5300A9E33F /* vec3.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vec3.hpp; sourceTree = "<group>"; };
 		BA38C071239E157F00A9E33F /* Scene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Scene.cpp; sourceTree = "<group>"; };
 		BA38C072239E157F00A9E33F /* Scene.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Scene.hpp; sourceTree = "<group>"; };
-		BA38C074239E173600A9E33F /* Ray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Ray.cpp; sourceTree = "<group>"; };
-		BA38C075239E173600A9E33F /* Ray.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Ray.hpp; sourceTree = "<group>"; };
 		BA468AE323A72ABF00D6C8CD /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		BA468AE723A72CB500D6C8CD /* cl.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cl.hpp; sourceTree = "<group>"; };
 		BA6EBB2623A1912900D62793 /* Object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Object.cpp; sourceTree = "<group>"; };
@@ -92,18 +83,12 @@
 				BA38C059239DF7C200A9E33F /* main.cpp */,
 				BA38C068239E04F400A9E33F /* PathTracer.cpp */,
 				BA38C069239E04F400A9E33F /* PathTracer.hpp */,
-				BA38C074239E173600A9E33F /* Ray.cpp */,
-				BA38C075239E173600A9E33F /* Ray.hpp */,
 				BA38C071239E157F00A9E33F /* Scene.cpp */,
 				BA38C072239E157F00A9E33F /* Scene.hpp */,
 				BA6EBB2923A191BD00D62793 /* Material.cpp */,
 				BA6EBB2A23A191BD00D62793 /* Material.hpp */,
 				BA6EBB2623A1912900D62793 /* Object.cpp */,
 				BA6EBB2723A1912900D62793 /* Object.hpp */,
-				BA38C06E239E0E5300A9E33F /* vec3.cpp */,
-				BA38C06F239E0E5300A9E33F /* vec3.hpp */,
-				BA38C06B239E064900A9E33F /* vec2.cpp */,
-				BA38C06C239E064900A9E33F /* vec2.hpp */,
 				BA38C065239E00E700A9E33F /* Image.cpp */,
 				BA38C066239E00E700A9E33F /* Image.hpp */,
 				BA468AE723A72CB500D6C8CD /* cl.hpp */,
@@ -182,10 +167,7 @@
 				BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */,
 				BA9A8C3723AA77EB0088C9A1 /* OBJLoader.cpp in Sources */,
 				BA6EBB2823A1912900D62793 /* Object.cpp in Sources */,
-				BA38C06D239E064900A9E33F /* vec2.cpp in Sources */,
 				BA38C067239E00E700A9E33F /* Image.cpp in Sources */,
-				BA38C076239E173600A9E33F /* Ray.cpp in Sources */,
-				BA38C070239E0E5300A9E33F /* vec3.cpp in Sources */,
 				BA38C05A239DF7C200A9E33F /* main.cpp in Sources */,
 				BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */,
 			);

@@ -9,22 +9,17 @@
 #ifndef Material_hpp
 #define Material_hpp
 
-#include "vec3.hpp"
-#include "Ray.hpp"
+#include "cl.hpp"
 
-class Material {
-
-public:
+struct __attribute__ ((packed)) Material {
+    cl_float emissiveness;
+    cl_float3 emissionColor;
+    cl_float metalness;
+    cl_float3 baseColor;
+    Material(cl_float emissiveness, cl_float3 emissionColor, cl_float metalness, cl_float3 baseColor);
     Material();
-    Material(vec3 baseColor, vec3 emissionColor, bool emissive, bool metal);
-    void getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed);
-
-private:
-    vec3 baseColor;
-    vec3 emissionColor;
-    bool emissive;
-    bool metal;
-    
 };
+
+cl_float3 make_cl_float3(float x, float y, float z);
 
 #endif /* Material_hpp */

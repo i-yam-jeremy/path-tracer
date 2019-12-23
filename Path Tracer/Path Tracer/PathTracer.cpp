@@ -13,30 +13,10 @@
 
 #include "Image.hpp"
 #include "Object.hpp"
+#include "Material.hpp"
 
-PathTracer::PathTracer(Scene scene) {
+PathTracer::PathTracer(Scene *scene) {
     this->scene = scene;
-}
-
-typedef struct __attribute__ ((packed)) material {
-    cl_float emissiveness;
-    cl_float3 emissionColor;
-    cl_float metalness;
-    cl_float3 baseColor;
-    material(cl_float emissiveness, cl_float3 emissionColor, cl_float metalness, cl_float3 baseColor) {
-        this->emissiveness = emissiveness;
-        this->emissionColor = emissionColor;
-        this->metalness = metalness;
-        this->baseColor = baseColor;
-    };
-} Mat;
-
-cl_float3 make_cl_float3(float x, float y, float z) {
-    cl_float3 v;
-    v.x = x;
-    v.y = y;
-    v.z = z;
-    return v;
 }
 
 void PathTracer::render(std::string filename, int width, int height, int samplesPerPixel) {
@@ -232,10 +212,10 @@ void PathTracer::render(std::string filename, int width, int height, int samples
     }
     
     std::vector<float> vertices;
-    std::vector<Mat> materials;
+    std::vector<Material> materials;
     int triCount = 0;
     
-    std::vector<Object*> objects = this->scene.getObjects();
+    std::vector<Object*> objects = this->scene->getObjects();
     for (int i = 0; i < objects.size(); i++) {
         Object *obj = objects[i];
         std::vector<float> vbuf = obj->getVertexBuffer();
@@ -243,35 +223,14 @@ void PathTracer::render(std::string filename, int width, int height, int samples
         triCount += vbuf.size()/9;
         vertices.insert(vertices.end(), vbuf.begin(), vbuf.end());
         for (int j = 0; j < vbuf.size()/9; j++) {
-            if (i == 0) {
-                materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 0.0, make_cl_float3(1,1,1)));
-            }
-            else if (i == 1) {
-                materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 1.0, make_cl_float3(0.722,0.451,0.2)));
-            }
-            else if (i == 2) {
-                materials.push_back(Mat(0.0, make_cl_float3(0,0,0), 1.0, make_cl_float3(0.3,0.3,0.8)));
-            }
-            else if (i == 3) {
-                materials.push_back(Mat(1.0, make_cl_float3(0.2,0.2,0.8), 0.0, make_cl_float3(0,0,0)));
-            }
-            else if (i == 4) {
-                materials.push_back(Mat(1.0, make_cl_float3(0.2,0.8,0.2), 0.0, make_cl_float3(0,0,0)));
-            }
-            else if (i == 5) {
-                materials.push_back(Mat(1.0, make_cl_float3(0.8,0.2,0.2), 0.0, make_cl_float3(0,0,0)));
-            }
-            else {
-                std::cout << "No assignmed material" << std::endl;
-                exit(1);
-            }
+            materials.push_back(obj->getMaterial());
         }
     }
 
     
    // create buffers on the device
    cl::Buffer buffer_vertices(context,CL_MEM_READ_WRITE,sizeof(float)*vertices.size());
-   cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(Mat)*materials.size());
+   cl::Buffer buffer_materials(context,CL_MEM_READ_WRITE,sizeof(Material)*materials.size());
    cl::Buffer buffer_outPixels(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
    cl::Buffer buffer_randStates(context,CL_MEM_READ_WRITE,sizeof(unsigned int)*width*height);
 
@@ -287,7 +246,7 @@ void PathTracer::render(std::string filename, int width, int height, int samples
         }
     }
    queue.enqueueWriteBuffer(buffer_vertices,CL_TRUE,0,sizeof(float)*vertices.size(),&vertices[0]);
-   queue.enqueueWriteBuffer(buffer_materials,CL_TRUE,0,sizeof(Mat)*materials.size(),&materials[0]);
+   queue.enqueueWriteBuffer(buffer_materials,CL_TRUE,0,sizeof(Material)*materials.size(),&materials[0]);
    queue.enqueueWriteBuffer(buffer_outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
    queue.enqueueWriteBuffer(buffer_randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
    delete[] randStates;
@@ -323,7 +282,7 @@ void PathTracer::render(std::string filename, int width, int height, int samples
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int index = 3*(y*width + x);
-            image.setColor(x, y, vec3(pixels[index+0], pixels[index+1], pixels[index+2]));
+            image.setColor(x, y, pixels[index+0], pixels[index+1], pixels[index+2]);
         }
     }
     

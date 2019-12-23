@@ -8,86 +8,24 @@
 
 #include "Material.hpp"
 
-#include <stdlib.h>
-#include <random>
+Material::Material(cl_float emissiveness, cl_float3 emissionColor, cl_float metalness, cl_float3 baseColor) {
+    this->emissiveness = emissiveness;
+    this->emissionColor = emissionColor;
+    this->metalness = metalness;
+    this->baseColor = baseColor;
+}
 
 Material::Material() {
-    this->baseColor = vec3(1);
-    this->emissionColor = vec3(0);
-    this->emissive = false;
-    this->metal = false;
+    this->emissiveness = 0.0;
+    this->emissionColor = make_cl_float3(0, 0, 0);
+    this->metalness = 0.0;
+    this->baseColor = make_cl_float3(1, 1, 1);
 }
 
-Material::Material(vec3 baseColor, vec3 emissionColor, bool emissive, bool metal) {
-    this->baseColor = baseColor;
-    this->emissionColor = emissionColor;
-    this->emissive = emissive;
-    this->metal = metal;
-}
-
-float random(float lo, float hi) {
-    float unit = float(rand()) / RAND_MAX;
-    return (hi-lo)*unit + lo;
-}
-
-void Material::getReflectedRay(Ray ray, vec3 intersectionPos, vec3 normal, Ray &outRay, vec3 &outColorScale, bool &outAbsorbed) {
-    if (metal) {
-        
-    }
-    else if (emissive) {
-        outColorScale = emissionColor*vec3(17);
-        outAbsorbed = true;
-    }
-    else {
-        if (random(0,1) < 0.25) {
-            outColorScale = vec3(0);
-            outAbsorbed = true;
-            return;
-        }
-        else {
-            vec3 N = normal;
-            float theta = random(0,2*M_PI);
-            float phi = random(0,2*M_PI);
-            vec3 s = vec3( // random point on sphere
-                           1.0,
-                           theta,
-                           phi
-                           );
-            vec3 pathDir = vec3(
-                                s.x*sin(s.z)*cos(s.y),
-                                s.x*sin(s.z)*sin(s.y),
-                                s.x*cos(s.z)
-                                );
-            pathDir = pathDir + N;
-            pathDir = normalize(pathDir);
-            float lambertReflectanceFactor = dot(N, pathDir);
-            outRay = Ray(intersectionPos + 0.000001*N, pathDir);
-            outColorScale = baseColor*vec3(lambertReflectanceFactor);
-            outAbsorbed = false;
-            return;
-            /*outAbsorbed = false;
-            outRay = Ray(intersectionPos + 0.0001*normal, ray.dir - vec3(2.0*dot(ray.dir, normal))*normal);
-            outColorScale = 0.8*this->baseColor;*/
-        }
-        /*vec3 N = in.normal;
-        std::uniform_real_distribution<float> dist(0, 2.0*M_PI);
-        vec3 color = vec3(0);
-        float theta = dist(e2);
-        float phi = dist(e2);
-        vec3 s = vec3( // random point on sphere
-                       1.0,
-                       theta,
-                       phi
-                       );
-        vec3 pathDir = vec3(
-                            s.x*sin(s.z)*cos(s.y),
-                            s.x*sin(s.z)*sin(s.y),
-                            s.x*cos(s.z)
-                            );
-        pathDir = pathDir + N;
-        pathDir = normalize(pathDir);
-        float lambertReflectanceFactor = dot(N, pathDir);
-        color = color + vec3(lambertReflectanceFactor)*renderPath(Ray(in.pos + 0.000001*N, pathDir), bounceCount+1);
-        return 0.8*color*in.objectColor;*/
-    }
+cl_float3 make_cl_float3(float x, float y, float z) {
+    cl_float3 v;
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    return v;
 }

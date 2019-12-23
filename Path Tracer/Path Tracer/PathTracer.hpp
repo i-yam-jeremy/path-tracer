@@ -10,20 +10,16 @@
 #define PathTracer_hpp
 
 #include <string>
-#include <random>
 
-#include "vec2.hpp"
-#include "vec3.hpp"
-#include "Ray.hpp"
 #include "Scene.hpp"
 
 class PathTracer {
 
 public:
-    PathTracer(Scene scene);
+    PathTracer(Scene *scene);
     void render(std::string filename, int width, int height, int samplesPerPixel);
 private:
-    Scene scene;
+    Scene *scene;
     
 };
 

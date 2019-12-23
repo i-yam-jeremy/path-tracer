@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "vec3.hpp"
-
 /*
  A representation of data from an .obj file.
  */
@@ -22,7 +20,7 @@ class OBJ {
         /*
          Loads
          */
-        OBJ(std::string filename, vec3 pos);
+        OBJ(std::string filename);
         /*
          Returns the vertex data stored as x,y,z components in a float vector.
          */
