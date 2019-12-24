@@ -10,19 +10,26 @@
 #define Scene_hpp
 
 #include <vector>
+#include <string>
 
 #include "Object.hpp"
 
 class Scene {
     
 public:
-    Scene();
+    Scene(std::string configFilename);
     ~Scene();
-    void addObject(Object* obj);
     std::vector<Object*> getObjects();
     
 private:
     std::vector<Object*> objects;
+    int width = 960;
+    int height = 540;
+    int samplesPerPixel = 100;
+    int clPlatformIndex = 0;
+    int clDeviceIndex = 0;
+    
+    void addObject(Object* obj);
 };
 
 #endif /* Scene_hpp */

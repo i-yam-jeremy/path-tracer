@@ -15,6 +15,7 @@
 		BA6EBB2823A1912900D62793 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2623A1912900D62793 /* Object.cpp */; };
 		BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA6EBB2923A191BD00D62793 /* Material.cpp */; };
 		BA9A8C3723AA77EB0088C9A1 /* OBJLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA9A8C3523AA77EB0088C9A1 /* OBJLoader.cpp */; };
+		BAC1CD0B23B2A7DC00B663BD /* StringUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAC1CD0923B2A7DB00B663BD /* StringUtil.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +47,8 @@
 		BA6EBB2A23A191BD00D62793 /* Material.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Material.hpp; sourceTree = "<group>"; };
 		BA9A8C3523AA77EB0088C9A1 /* OBJLoader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OBJLoader.cpp; sourceTree = "<group>"; };
 		BA9A8C3623AA77EB0088C9A1 /* OBJLoader.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = OBJLoader.hpp; sourceTree = "<group>"; };
+		BAC1CD0923B2A7DB00B663BD /* StringUtil.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtil.cpp; sourceTree = "<group>"; };
+		BAC1CD0A23B2A7DC00B663BD /* StringUtil.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = StringUtil.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +95,8 @@
 				BA38C065239E00E700A9E33F /* Image.cpp */,
 				BA38C066239E00E700A9E33F /* Image.hpp */,
 				BA468AE723A72CB500D6C8CD /* cl.hpp */,
+				BAC1CD0923B2A7DB00B663BD /* StringUtil.cpp */,
+				BAC1CD0A23B2A7DC00B663BD /* StringUtil.hpp */,
 				BA9A8C3523AA77EB0088C9A1 /* OBJLoader.cpp */,
 				BA9A8C3623AA77EB0088C9A1 /* OBJLoader.hpp */,
 			);
@@ -167,6 +172,7 @@
 				BA38C06A239E04F400A9E33F /* PathTracer.cpp in Sources */,
 				BA9A8C3723AA77EB0088C9A1 /* OBJLoader.cpp in Sources */,
 				BA6EBB2823A1912900D62793 /* Object.cpp in Sources */,
+				BAC1CD0B23B2A7DC00B663BD /* StringUtil.cpp in Sources */,
 				BA38C067239E00E700A9E33F /* Image.cpp in Sources */,
 				BA38C05A239DF7C200A9E33F /* main.cpp in Sources */,
 				BA6EBB2B23A191BD00D62793 /* Material.cpp in Sources */,

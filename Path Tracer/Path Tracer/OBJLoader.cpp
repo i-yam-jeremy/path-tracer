@@ -9,24 +9,9 @@
 #include "OBJLoader.hpp"
 
 #include <fstream>
-#include <sstream>
-
 #include <iostream>
 
-/*
- Splits a string into a vector using the given delimiter.
-  s - the string to be split
-  delim - the delimiter
- */
-std::vector<std::string> split(std::string s, char delim) {
-    std::stringstream stream(s);
-    std::string item;
-    std::vector<std::string> split;
-    while (std::getline(stream, item, delim)) {
-        split.push_back(item);
-    }
-    return split;
-}
+#include "StringUtil.hpp"
 
 void readVertex(std::vector<float> &indexedVertices, std::vector<std::string> params) {
     if (params.size() != 4 && params.size() != 5) {
