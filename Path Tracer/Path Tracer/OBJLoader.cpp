@@ -30,7 +30,8 @@ std::vector<std::string> split(std::string s, char delim) {
 
 void readVertex(std::vector<float> &indexedVertices, std::vector<std::string> params) {
     if (params.size() != 4 && params.size() != 5) {
-        //TODO error/exception
+        std::cout << "Invalid vertex definition in OBJ file." << std::endl;
+        exit(1);
     }
     
     float x = atof(params[1].c_str());
@@ -45,7 +46,8 @@ void readVertex(std::vector<float> &indexedVertices, std::vector<std::string> pa
 
 void readTexCoord(std::vector<float> &indexedTexCoords, std::vector<std::string> params) {
     if (params.size() != 3 && params.size() != 4) {
-        //TODO error/exception
+        std::cout << "Invalid tex coord definition in OBJ file." << std::endl;
+        exit(1);
     }
     
     float u = atof(params[1].c_str());
@@ -58,7 +60,8 @@ void readTexCoord(std::vector<float> &indexedTexCoords, std::vector<std::string>
 
 void readNormal(std::vector<float> &indexedNormals, std::vector<std::string> params) {
     if (params.size() != 4) {
-        //TODO error/exception
+        std::cout << "Invalid normal definition in OBJ file." << std::endl;
+        exit(1);
     }
     
     float x = atof(params[1].c_str());
@@ -71,7 +74,8 @@ void readNormal(std::vector<float> &indexedNormals, std::vector<std::string> par
 
 void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, std::vector<float> &texCoords, std::vector<float> indexedTexCoords, std::vector<float> &normals, std::vector<float> indexedNormals, std::vector<std::string> params) {
     if (params.size() < 4) {
-        // TODO error/exception
+        std::cout << "Invalid face definition in OBJ file." << std::endl;
+        exit(1);
     }
     
     if (params.size() > 5) {
