@@ -18,9 +18,10 @@ class PathTracer {
 public:
     PathTracer(Scene *scene);
     void render(std::string filename, int platformIndex, int deviceIndex, int width, int height, int samplesPerPixel);
+    static void listOpenCLDevices();
 private:
     Scene *scene;
-    
+
 };
 
 #endif /* PathTracer_hpp */

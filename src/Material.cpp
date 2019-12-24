@@ -24,8 +24,8 @@ Material::Material() {
 
 cl_float3 make_cl_float3(float x, float y, float z) {
     cl_float3 v;
-    v.x = x;
+    /*v.x = x;
     v.y = y;
-    v.z = z;
+    v.z = z;*/
     return v;
 }

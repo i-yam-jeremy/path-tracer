@@ -19,6 +19,29 @@ PathTracer::PathTracer(Scene *scene) {
     this->scene = scene;
 }
 
+void PathTracer::listOpenCLDevices() {
+  std::vector<cl::Platform> allPlatforms;
+  cl::Platform::get(&allPlatforms);
+  if (allPlatforms.size() == 0) {
+      std::cout << "No platforms" << std::endl;
+      return;
+  }
+  for (int platformIndex = 0; platformIndex < allPlatforms.size(); platformIndex++) {
+    cl::Platform platform = allPlatforms[platformIndex];
+    std::cout << "Platform " << platformIndex << ": " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
+
+    std::vector<cl::Device> allDevices;
+    platform.getDevices(CL_DEVICE_TYPE_ALL, &allDevices);
+    if(allDevices.size() == 0){
+        std::cout << "\tNo devices." << std::endl;
+    }
+    for (int deviceIndex = 0; deviceIndex < allDevices.size(); deviceIndex++) {
+      cl::Device device = allDevices[deviceIndex];
+      std::cout << "\tDevice " << deviceIndex << ": " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+    }
+  }
+}
+
 cl::Device getDevice(int platformIndex, int deviceIndex) {
     std::vector<cl::Platform> allPlatforms;
     cl::Platform::get(&allPlatforms);
@@ -37,7 +60,7 @@ cl::Device getDevice(int platformIndex, int deviceIndex) {
     }
     cl::Device device = allDevices[1];
     std::cout<< "Using device: "<< device.getInfo<CL_DEVICE_NAME>() << std::endl;
-    
+
     return device;
 }
 
@@ -47,7 +70,7 @@ struct CLBufferCollection {
 
 CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, int width, int height, std::vector<float> vertices, std::vector<float> texCoords, std::vector<float> normals, std::vector<Material> materials) {
     CLBufferCollection bc;
-    
+
     bc.vertices = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*vertices.size());
     bc.texCoords = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*texCoords.size());
     bc.normals = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*normals.size());
@@ -56,7 +79,7 @@ CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, 
     bc.randStates = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(unsigned int)*width*height);
 
     float *pixels = new float[3*width*height]();
-    
+
     unsigned int *randStates = new unsigned int[width*height];
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -70,7 +93,7 @@ CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, 
     queue.enqueueWriteBuffer(bc.materials,CL_TRUE,0,sizeof(Material)*materials.size(),&materials[0]);
     queue.enqueueWriteBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
     queue.enqueueWriteBuffer(bc.randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
-    
+
     delete[] pixels;
     delete[] randStates;
 
@@ -259,7 +282,7 @@ cl::Program buildProgram(cl::Context context, cl::Device device) {
         std::cout <<" Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
         exit(1);
     }
-    
+
     return program;
 }
 
@@ -281,7 +304,7 @@ void processObjects(std::vector<Object*> objects, std::vector<float> *vertices, 
 
 cl::Kernel createRenderKernel(cl::Program program, CLBufferCollection bc, int triCount, int width, int height, int samplesPerPixel) {
     cl::Kernel render(program, "render");
-    
+
     render.setArg(0, bc.vertices);
     render.setArg(1, bc.texCoords);
     render.setArg(2, bc.normals);
@@ -292,7 +315,7 @@ cl::Kernel createRenderKernel(cl::Program program, CLBufferCollection bc, int tr
     render.setArg(7, samplesPerPixel);
     render.setArg(8, bc.outPixels);
     render.setArg(9, bc.randStates);
-    
+
     return render;
 }
 
@@ -320,17 +343,17 @@ void writeImage(std::string filename, int width, int height, float *pixels) {
             image.setColor(x, y, pixels[index+0], pixels[index+1], pixels[index+2]);
         }
     }
-    
+
     image.write(filename);
 }
 
 void PathTracer::render(std::string filename, int platformIndex, int deviceIndex, int width, int height, int samplesPerPixel) {
     cl::Device device = getDevice(platformIndex, deviceIndex);
     cl::Context context({device});
-    
-    
+
+
     cl::Program program = buildProgram(context, device);
-    
+
     std::vector<float> vertices, texCoords, normals;
     std::vector<Material> materials;
     int triCount = 0;
@@ -339,18 +362,18 @@ void PathTracer::render(std::string filename, int platformIndex, int deviceIndex
 
    //create queue to which we will push commands for the device.
    cl::CommandQueue queue(context, device);
-    
+
     CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, texCoords, normals, materials);
-    
+
     cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
     runKernel(queue, render, width, height, samplesPerPixel);
-    
+
     float *pixels = new float[3*width*height];
     queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
-    
+
     queue.finish();
-    
+
     writeImage(filename, width, height, pixels);
-    
+
     delete[] pixels;
 }
