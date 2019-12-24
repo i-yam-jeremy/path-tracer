@@ -13,9 +13,6 @@
 #include "Scene.hpp"
 #include "Material.hpp"
 
-#define RENDER_WIDTH (1920/4)
-#define RENDER_HEIGHT (1080/4)
-
 int main(int argc, const char * argv[]) {
     if (argc != 2) {
         std::cout << "Usage: " << std::endl;
