@@ -347,33 +347,39 @@ void writeImage(std::string filename, int width, int height, float *pixels) {
     image.write(filename);
 }
 
-void PathTracer::render(std::string filename, int platformIndex, int deviceIndex, int width, int height, int samplesPerPixel) {
-    cl::Device device = getDevice(platformIndex, deviceIndex);
-    cl::Context context({device});
+void PathTracer::render(std::string filename) {
+  int platformIndex = scene->getCLPlatformIndex();
+  int deviceIndex = scene->getCLDeviceIndex();
+  int width = scene->getRenderWidth();
+  int height = scene->getRenderHeight();
+  int samplesPerPixel = scene->getSamplesPerPixel();
+
+  cl::Device device = getDevice(platformIndex, deviceIndex);
+  cl::Context context({device});
 
 
-    cl::Program program = buildProgram(context, device);
+  cl::Program program = buildProgram(context, device);
 
-    std::vector<float> vertices, texCoords, normals;
-    std::vector<Material> materials;
-    int triCount = 0;
-    processObjects(this->scene->getObjects(), &vertices, &texCoords, &normals, &materials, &triCount);
+  std::vector<float> vertices, texCoords, normals;
+  std::vector<Material> materials;
+  int triCount = 0;
+  processObjects(this->scene->getObjects(), &vertices, &texCoords, &normals, &materials, &triCount);
 
 
-   //create queue to which we will push commands for the device.
-   cl::CommandQueue queue(context, device);
+  //create queue to which we will push commands for the device.
+  cl::CommandQueue queue(context, device);
 
-    CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, texCoords, normals, materials);
+  CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, texCoords, normals, materials);
 
-    cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
-    runKernel(queue, render, width, height, samplesPerPixel);
+  cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
+  runKernel(queue, render, width, height, samplesPerPixel);
 
-    float *pixels = new float[3*width*height];
-    queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+  float *pixels = new float[3*width*height];
+  queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
 
-    queue.finish();
+  queue.finish();
 
-    writeImage(filename, width, height, pixels);
+  writeImage(filename, width, height, pixels);
 
-    delete[] pixels;
+  delete[] pixels;
 }

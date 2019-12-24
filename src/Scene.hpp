@@ -15,12 +15,17 @@
 #include "Object.hpp"
 
 class Scene {
-    
+
 public:
     Scene(std::string configFilename);
     ~Scene();
     std::vector<Object*> getObjects();
-    
+    int getRenderWidth();
+    int getRenderHeight();
+    int getSamplesPerPixel();
+    int getCLPlatformIndex();
+    int getCLDeviceIndex();
+
 private:
     std::vector<Object*> objects;
     int width = 960;
@@ -28,7 +33,7 @@ private:
     int samplesPerPixel = 100;
     int clPlatformIndex = 0;
     int clDeviceIndex = 0;
-    
+
     void addObject(Object* obj);
 };
 

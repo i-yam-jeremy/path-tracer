@@ -35,7 +35,7 @@ int main(int argc, const char * argv[]) {
     Scene *scene = new Scene(sceneConfigFilename);
 
     PathTracer pathTracer(scene);
-    pathTracer.render("/Users/i-yam-jeremy/Desktop/out.ppm", 0, 1, RENDER_WIDTH, RENDER_HEIGHT, 10);
+    pathTracer.render("/Users/i-yam-jeremy/Desktop/out.ppm");
 
     delete scene;
 

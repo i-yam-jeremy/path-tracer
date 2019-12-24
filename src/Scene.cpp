@@ -17,8 +17,9 @@ Scene::Scene(std::string configFilename) {
     std::string baseDir = ""; // TODO
     std::ifstream file(configFilename);
     std::string line;
-    
+
     while (std::getline(file, line)) {
+        if (line == "") continue;
         auto params = split(line, ' ');
         if (params[0] == "spp") {
             this->samplesPerPixel = atoi(params[1].c_str());
@@ -61,4 +62,24 @@ void Scene::addObject(Object* obj) {
 
 std::vector<Object*> Scene::getObjects() {
     return objects;
+}
+
+int Scene::getRenderWidth() {
+  return width;
+}
+
+int Scene::getRenderHeight() {
+  return height;
+}
+
+int Scene::getSamplesPerPixel() {
+  return samplesPerPixel;
+}
+
+int Scene::getCLPlatformIndex() {
+  return clPlatformIndex;
+}
+
+int Scene::getCLDeviceIndex() {
+  return clDeviceIndex;
 }
