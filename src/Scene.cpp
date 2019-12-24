@@ -24,6 +24,10 @@ std::string getBaseDir(std::string filename) {
 Scene::Scene(std::string configFilename) {
     std::string baseDir = getBaseDir(configFilename);
     std::ifstream file(configFilename);
+    if (!file.is_open()) {
+      std::cout << "Could not open scene config file: " << configFilename << std::endl;
+      exit(1);
+    }
     std::string line;
 
     while (std::getline(file, line)) {
