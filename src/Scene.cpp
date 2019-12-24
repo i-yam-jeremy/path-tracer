@@ -13,8 +13,16 @@
 
 #include "StringUtil.hpp"
 
+std::string getBaseDir(std::string filename) {
+  long index = filename.find_last_of("/");
+  if (index > -1) {
+    return filename.substr(0, index);
+  }
+  return "";
+}
+
 Scene::Scene(std::string configFilename) {
-    std::string baseDir = ""; // TODO
+    std::string baseDir = getBaseDir(configFilename);
     std::ifstream file(configFilename);
     std::string line;
 
@@ -44,7 +52,7 @@ Scene::Scene(std::string configFilename) {
                                                      atof(params[7].c_str()),
                                                      atof(params[8].c_str()),
                                                      atof(params[9].c_str()));
-            this->addObject(new Object(baseDir + objRelativePath,
+            this->addObject(new Object(baseDir + "/" + objRelativePath,
                                        Material(emissiveness, emissionColor, metalness, baseColor)));
         }
     }

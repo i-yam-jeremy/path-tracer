@@ -18,14 +18,14 @@ void readVertex(std::vector<float> &indexedVertices, std::vector<std::string> pa
         std::cout << "Invalid vertex definition in OBJ file." << std::endl;
         exit(1);
     }
-    
+
     float x = atof(params[1].c_str());
     float y = atof(params[2].c_str());
     float z = atof(params[3].c_str());
     indexedVertices.push_back(x);
     indexedVertices.push_back(y);
     indexedVertices.push_back(z);
-    
+
     // Ignore optional w component
 }
 
@@ -34,12 +34,12 @@ void readTexCoord(std::vector<float> &indexedTexCoords, std::vector<std::string>
         std::cout << "Invalid tex coord definition in OBJ file." << std::endl;
         exit(1);
     }
-    
+
     float u = atof(params[1].c_str());
     float v = atof(params[2].c_str());
     indexedTexCoords.push_back(u);
     indexedTexCoords.push_back(v);
-    
+
     // Ignore optional w component
 }
 
@@ -48,7 +48,7 @@ void readNormal(std::vector<float> &indexedNormals, std::vector<std::string> par
         std::cout << "Invalid normal definition in OBJ file." << std::endl;
         exit(1);
     }
-    
+
     float x = atof(params[1].c_str());
     float y = atof(params[2].c_str());
     float z = atof(params[3].c_str());
@@ -62,7 +62,7 @@ void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, 
         std::cout << "Invalid face definition in OBJ file." << std::endl;
         exit(1);
     }
-    
+
     if (params.size() > 5) {
         std::cout << "Only triangles and quads are supported. Please remove n-gons from your mesh." << std::endl;
         exit(1);
@@ -86,17 +86,17 @@ void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, 
         normalIndices.insert(normalIndices.begin() + 3, normalIndices[2]);
         normalIndices.insert(normalIndices.end(), normalIndices[0]);
     }
-    
+
     for (int i = 0; i < vIndices.size(); i++) {
         long vIndex = vIndices[i];
         vertices.push_back(indexedVertices[3*vIndex+0]);
         vertices.push_back(indexedVertices[3*vIndex+1]);
         vertices.push_back(indexedVertices[3*vIndex+2]);
-        
+
         long texCoordIndex = texCoordIndices[i];
         texCoords.push_back(indexedTexCoords[2*texCoordIndex+0]);
         texCoords.push_back(indexedTexCoords[2*texCoordIndex+1]);
-        
+
         long normalIndex = normalIndices[i];
         normals.push_back(indexedNormals[3*normalIndex+0]);
         normals.push_back(indexedNormals[3*normalIndex+1]);
@@ -106,6 +106,10 @@ void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, 
 
 OBJ::OBJ(std::string filename) {
     std::ifstream file(filename);
+    if (!file.is_open()) {
+      std::cout << "Could not open OBJ file: " << filename << std::endl;
+      exit(1);
+    }
     std::string line;
     std::vector<float> indexedVertices;
     std::vector<float> indexedTexCoords;
@@ -126,7 +130,7 @@ OBJ::OBJ(std::string filename) {
         }
     }
 }
-        
+
 std::vector<float>& OBJ::getVertexBuffer() {
     return vertices;
 }
