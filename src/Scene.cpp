@@ -32,7 +32,7 @@ Scene::Scene(std::string configFilename) {
 
     while (std::getline(file, line)) {
         if (line == "") continue;
-        auto params = split(line, ' ');
+        auto params = stringutil::split(line, ' ');
         if (params[0] == "spp") {
             this->samplesPerPixel = atoi(params[1].c_str());
         }

@@ -10,7 +10,7 @@
 
 #include <sstream>
 
-std::vector<std::string> split(std::string s, char delim) {
+std::vector<std::string> stringutil::split(std::string s, char delim) {
     std::stringstream stream(s);
     std::string item;
     std::vector<std::string> split;

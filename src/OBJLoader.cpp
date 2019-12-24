@@ -72,7 +72,7 @@ void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, 
     std::vector<long> texCoordIndices;
     std::vector<long> normalIndices;
     for (int i = 0; i < params.size()-1; i++) {
-        std::vector<std::string> vertexData = split(params[i+1], '/');
+        std::vector<std::string> vertexData = stringutil::split(params[i+1], '/');
         vIndices.push_back(atoi(vertexData[0].c_str()) - 1);
         texCoordIndices.push_back(atoi(vertexData[1].c_str()) - 1);
         normalIndices.push_back(atoi(vertexData[2].c_str()) - 1);
@@ -115,7 +115,7 @@ OBJ::OBJ(std::string filename) {
     std::vector<float> indexedTexCoords;
     std::vector<float> indexedNormals;
     while (std::getline(file, line)) {
-        auto params = split(line, ' ');
+        auto params = stringutil::split(line, ' ');
         if (params[0] == "v") {
             readVertex(indexedVertices, params);
         }

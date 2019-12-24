@@ -13,10 +13,16 @@
 #include <vector>
 
 /*
- Splits a string into a vector using the given delimiter.
-  s - the string to be split
-  delim - the delimiter
- */
-std::vector<std::string> split(std::string s, char delim);
+  Utility functions for processing strings.
+*/
+namespace stringutil {
+  /*
+    Splits a string into a vector using the given delimiter.
+    @param s - The string to be split.
+    @param delim - The delimiter.
+    @return A vector containing the split strings.
+   */
+  std::vector<std::string> split(std::string s, char delim);
+};
 
 #endif /* StringUtil_hpp */

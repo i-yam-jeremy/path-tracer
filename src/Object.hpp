@@ -52,7 +52,13 @@ public:
     Material getMaterial();
 
 private:
+    /*
+      The loaded OBJ mesh.
+    */
     OBJ *obj;
+    /*
+      The material used by this object.
+    */
     Material material;
 
 };
