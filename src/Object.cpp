@@ -17,15 +17,15 @@ Object::~Object() {
     delete this->obj;
 }
 
-std::vector<float> Object::getVertexBuffer() {
+std::vector<float>& Object::getVertexBuffer() {
     return this->obj->getVertexBuffer();
 }
 
-std::vector<float> Object::getTexCoordBuffer() {
+std::vector<float>& Object::getTexCoordBuffer() {
     return this->obj->getTexCoordBuffer();
 }
 
-std::vector<float> Object::getNormalBuffer() {
+std::vector<float>& Object::getNormalBuffer() {
     return this->obj->getNormalBuffer();
 }
 
