@@ -29,7 +29,7 @@ int main(int argc, const char * argv[]) {
     scene->addObject(new Object("/Users/i-yam-jeremy/Desktop/test7.obj", Material(0.0, make_cl_float3(0,0,0), 0.0, make_cl_float3(1,1,1))));
     
     PathTracer pathTracer(scene);
-    pathTracer.render("/Users/i-yam-jeremy/Desktop/out.ppm", 0, 1, RENDER_WIDTH, RENDER_HEIGHT, 10);
+    pathTracer.render("/Users/i-yam-jeremy/Desktop/out.ppm", 0, 1, RENDER_WIDTH, RENDER_HEIGHT, 100);
     
     delete scene;
     
