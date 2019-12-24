@@ -1,16 +1,47 @@
 
 #define PI 3.1415926536
+
+/*
+  Reflects the given vector I across the given normal N.
+  @param I - The incoming vector.
+  @param N - The normal.
+  @return The outgoing reflected vector.
+*/
 float3 reflect(float3 I, float3 N) { return I - 2.0f*dot(N,I)*N; }
+
+/*
+  Represents a ray.
+*/
 typedef struct ray {
+   /*
+    The direction of the ray.
+   */
    float3 dir;
+   /*
+    The origin of the ray.
+   */
    float3 origin;
 } Ray;
+
+/*
+  Creates a ray with the given origin and direction.
+  @param origin - The ray origin.
+  @param dir - The ray direction.
+  @return A ray with the given origin and direction.
+*/
 Ray make_ray(float3 origin, float3 dir) {
    Ray ray;
    ray.origin = origin;
    ray.dir = dir;
    return ray;
 }
+
+/*
+  Generates a uniformly-distributed random float in the interval [0, 1] based on
+    the given random state. Updates the given random state.
+  @param randState - A pointer to the random state.
+  @return A random number in the interval [0, 1].
+*/
 float randUnit(uint *randState) {
    uint x = *randState;
    x ^= x << 13;
@@ -19,26 +50,102 @@ float randUnit(uint *randState) {
    *randState = x;
    return float(x) / 4294967296.0;
 }
+
+/*
+  Generates a uniformly-distributed random float in the interval [lo, hi] based
+    on the given random state. Updates the given random state.
+  @param lo - The lower bound of the random range.
+  @param hi - The upper bound of the random range.
+  @param randState - A pointer to the random state.
+  @return A random number in the interval [lo, hi].
+*/
 float rand(float lo, float hi, uint *randState) {
    return (hi-lo)*randUnit(randState) + lo;
 }
+
+/*
+  A PBR material.
+  It is packed so the structure matches the host material struct.
+*/
 typedef struct __attribute__ ((packed)) material {
+  /*
+    The probability the material will emit light.
+  */
    float emissiveness;
+   /*
+     The color of the emitted light.
+   */
    float3 emissionColor;
+   /*
+     The probability the material will reflect light like a metal.
+     It is best to only use 0.0 or 1.0 for non-metals and metals, respectively.
+   */
    float metalness;
+   /*
+     The base color of the material.
+   */
    float3 baseColor;
 } Material;
+
+/*
+  A Ray-Triangle intersection.
+*/
 typedef struct intersection {
-   float t;
-   float3 pos;
-   float2 texCoord;
-   float3 normal;
-   int triIndex;
-   bool intersects;
+    /*
+      Specifies the intersection position on the ray.
+      intersectionPos = ray.origin + t*ray.dir;
+    */
+    float t;
+    /*
+      The position where the intersection occurred.
+    */
+    float3 pos;
+    /*
+      The interpolated texture coordinates of the surface at the intersection
+      point.
+    */
+    float2 texCoord;
+    /*
+      The interpolated normal of the surface at the intersection point.
+    */
+    float3 normal;
+    /*
+      The index of the intersected triangle out of all triangles in the scene.
+    */
+    int triIndex;
+    /*
+      Whether there was an intersection or not.
+    */
+    bool intersects;
 } Intersection;
+
+/*
+  Returns the area of a triangle with vertices A,B,C.
+  @param A - A vertex of the triangle.
+  @param B - A vertex of the triangle.
+  @param C - A vertex of the triangle.
+  @return The triangle area.
+*/
 float triArea(float3 A, float3 B, float3 C) {
    return 0.5*length(cross(B-A, C-A));
 }
+
+/*
+  Calculates the intersection between a ray and a triangle if one exists.
+    The triangle is specified by the vertices A,B,C.
+  @param ray - The ray to used to check intersection.
+  @param A - A vertex of the triangle.
+  @param B - A vertex of the triangle.
+  @param C - A vertex of the triangle.
+  @param tcA - The texture coordinates of vertex A.
+  @param tcB - The texture coordinates of vertex B.
+  @param tcC - The texture coordinates of vertex C.
+  @param nA - The normal of vertex A.
+  @param nB - The normal of vertex B.
+  @param nC - The normal of vertex C.
+  @param triIndex - The index of the triangle out of all triangles in the scene.
+  @return The intersection.
+*/
 Intersection rayTriangleIntersection(Ray ray, float3 A, float3 B, float3 C, float2 tcA, float2 tcB, float2 tcC, float3 nA, float3 nB, float3 nC, int triIndex) {
    Intersection notIntersection;
    notIntersection.t = 10000000000.0;
@@ -75,6 +182,17 @@ Intersection rayTriangleIntersection(Ray ray, float3 A, float3 B, float3 C, floa
    }
    return notIntersection;
 }
+
+/*
+  Returns the intersection to the closest triangle along the ray. The closest
+  triangle is defined as the intersection point being closest to the ray origin.
+  @param ray - The ray used to check intersection.
+  @param vertices - All vertices in the scene.
+  @param texCoords - All texture coordinates in the scene.
+  @param normals - All normals in the scene.
+  @param triCount - The total number of triangles in the scene.
+  @return The intersection.
+*/
 Intersection closestTriangle(Ray ray, global const float* vertices, global const float* texCoords, global const float* normals, const int triCount) {
    Intersection in;
    in.t = 10000000000.0;
@@ -99,12 +217,39 @@ Intersection closestTriangle(Ray ray, global const float* vertices, global const
    }
    return in;
 }
+
+/*
+  A light bounce or absorption.
+*/
 typedef struct bounce {
-   bool hasOutRay;
-   Ray outRay;
-   float3 color;
+    /*
+      Whether this bounce has an outgoing ray. There is an outgoing ray iff the
+      light path was reflected.
+    */
+    bool hasOutRay;
+    /*
+      The outgoing ray. If hasOutRay is false, then this value is undefined and
+      meaningless.
+    */
+    Ray outRay;
+    /*
+      The color factor of this bounce.
+    */
+    float3 color;
 } Bounce;
-Bounce renderPath(Ray ray, uint *randState, int bounceCount, global const float* vertices, global const float* texCoords, global const float* normals, global const Material* materials, const int triCount) {
+
+/*
+  Computes one bounce of the given light path.
+  @param ray - The ray representing the light path.
+  @param randState - The state for the random number generator.
+  @param vertices - All vertices in the scene.
+  @param texCoords - All texture coordinates in the scene.
+  @param normals - All normals in the scene.
+  @param materials - All materials in the scene.
+  @param triCount - The total number of triangles in the scene.
+  @return The bounced or absorbed light data.
+*/
+Bounce renderPath(Ray ray, uint *randState, global const float* vertices, global const float* texCoords, global const float* normals, global const Material* materials, const int triCount) {
    Bounce b;
    Intersection in = closestTriangle(ray, vertices, texCoords, normals, triCount);
    if (!in.intersects) {
@@ -146,6 +291,20 @@ Bounce renderPath(Ray ray, uint *randState, int bounceCount, global const float*
    b.color = colorScale;
    return b;
 }
+
+/*
+  Renders one light path through a pixel.
+  @param vertices - All vertices in the scene.
+  @param texCoords - All texture coordinates in the scene.
+  @param normals - All normals in the scene.
+  @param materials - All materials in the scene (one material per triangle).
+  @param triCount - The total number of triangles in the scene.
+  @param width - The width of the rendered viewport in pixels.
+  @param height - The height of the rendered viewport in pixels.
+  @param samplesPerPixel - The number of samples per pixel.
+  @param outPixels - The rendered pixel data.
+  @param randStates - The random states for each pixel in the scene.
+*/
 void kernel render(global const float* vertices, global const float* texCoords, global const float* normals, global const Material* materials, const int triCount, const int width, const int height, const int samplesPerPixel, global float* outPixels, global uint* randStates){
    int x = get_global_id(0);
    int y = get_global_id(1);
@@ -156,11 +315,11 @@ void kernel render(global const float* vertices, global const float* texCoords, 
    float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);
    Ray ray = make_ray(camera, rayDir);
    float3 color = (float3)(1,1,1);
-   Bounce b = renderPath(ray, &randState, 0, vertices, texCoords, normals, materials, triCount);
+   Bounce b = renderPath(ray, &randState, vertices, texCoords, normals, materials, triCount);
    color *= b.color;
    while (b.hasOutRay) {
        ray = b.outRay;
-       b = renderPath(ray, &randState, 0, vertices, texCoords, normals, materials, triCount);
+       b = renderPath(ray, &randState, vertices, texCoords, normals, materials, triCount);
        color *= b.color;
    }
    color /= samplesPerPixel;

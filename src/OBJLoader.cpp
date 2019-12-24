@@ -74,8 +74,10 @@ void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, 
     for (int i = 0; i < params.size()-1; i++) {
         std::vector<std::string> vertexData = stringutil::split(params[i+1], '/');
         vIndices.push_back(atoi(vertexData[0].c_str()) - 1);
-        texCoordIndices.push_back(atoi(vertexData[1].c_str()) - 1);
-        normalIndices.push_back(atoi(vertexData[2].c_str()) - 1);
+        if (vertexData.size() >= 2 && vertexData[1].length() != 0)
+          texCoordIndices.push_back(atoi(vertexData[1].c_str()) - 1);
+        if (vertexData.size() >= 3 && vertexData[2].length() != 0)
+          normalIndices.push_back(atoi(vertexData[2].c_str()) - 1);
     }
     if (params.size() == 5) { // Quad
         // Convert quad v1,v2,v3,v4 into triangles v1,v2,v3 and v3,v4,v1
@@ -92,11 +94,15 @@ void readFace(std::vector<float> &vertices, std::vector<float> indexedVertices, 
         vertices.push_back(indexedVertices[3*vIndex+0]);
         vertices.push_back(indexedVertices[3*vIndex+1]);
         vertices.push_back(indexedVertices[3*vIndex+2]);
+    }
 
+    for (int i = 0; i < texCoordIndices.size(); i++) {
         long texCoordIndex = texCoordIndices[i];
         texCoords.push_back(indexedTexCoords[2*texCoordIndex+0]);
         texCoords.push_back(indexedTexCoords[2*texCoordIndex+1]);
+    }
 
+    for (int i = 0; i < normalIndices.size(); i++) {
         long normalIndex = normalIndices[i];
         normals.push_back(indexedNormals[3*normalIndex+0]);
         normals.push_back(indexedNormals[3*normalIndex+1]);

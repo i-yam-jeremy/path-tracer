@@ -13,26 +13,36 @@
 #include "Scene.hpp"
 #include "Material.hpp"
 
+void usage() {
+  std::cout << "Usage: " << std::endl;
+  std::cout << "  pt --listDevices" << std::endl;
+  std::cout << "  pt sceneConfigFilename outputImageName" << std::endl;
+}
+
 int main(int argc, const char * argv[]) {
-    if (argc != 2) {
-        std::cout << "Usage: " << std::endl;
-        std::cout << "  pt --listDevices" << std::endl;
-        std::cout << "  pt sceneConfigFilename" << std::endl;
-        exit(1);
+    if (argc != 2 && argc != 3) {
+      usage();
+      exit(1);
     }
     if (std::string(argv[1]) == "--listDevices") {
         PathTracer::listOpenCLDevices();
         return 0;
     }
 
+    if (argc != 3) {
+      usage();
+      exit(1);
+    }
+
     std::string sceneConfigFilename = argv[1];
+    std::string outputImageName = argv[2];
 
     std::chrono::milliseconds startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
 
     Scene *scene = new Scene(sceneConfigFilename);
 
     PathTracer pathTracer(scene);
-    pathTracer.render("/Users/i-yam-jeremy/Desktop/out.ppm");
+    pathTracer.render(outputImageName);
 
     delete scene;
 
