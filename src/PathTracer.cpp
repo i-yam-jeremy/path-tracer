@@ -148,24 +148,6 @@ cl::Kernel createRenderKernel(cl::Program program, CLBufferCollection bc, int tr
     return render;
 }
 
-void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height, int samplesPerPixel) {
-    cl::Event eExecute;
-     int batchSideLength = 32;
-     for (int y = 0; y < height; y += batchSideLength) {
-         for (int x = 0; x < width; x += batchSideLength) {
-             float pixelsCompleted = x*std::min(height-y, batchSideLength) + y*width;
-             float totalPixels = width*height;
-             float fractionComplete = pixelsCompleted / totalPixels;
-             std::cout << 100.0*fractionComplete << "%" << ", (" << x << ", " << y << ")" << std::endl;
-             for (int i = 0; i < samplesPerPixel; i++) {
-                 cl::NDRange range(std::min(width-x, batchSideLength), std::min(height-y, batchSideLength));
-                 queue.enqueueNDRangeKernel(render, cl::NDRange(x,y), range, cl::NullRange, NULL, &eExecute);
-                 eExecute.wait();
-             }
-         }
-     }
-}
-
 void writeImage(std::string filename, int width, int height, float *pixels) {
     Image image(width, height);
     for (int y = 0; y < height; y++) {
@@ -176,6 +158,32 @@ void writeImage(std::string filename, int width, int height, float *pixels) {
     }
 
     image.write(filename);
+}
+
+void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height, int samplesPerPixel, std::string filename, CLBufferCollection bc) {
+    cl::Event eExecute;
+    int batchSideLength = 32;
+    float *pixels = new float[3*width*height];
+    for (int i = 0; i < samplesPerPixel; i++) {
+      float fractionComplete = float(i)/samplesPerPixel;
+      std::cout << 100.0*fractionComplete << "% (" << i << "/" << samplesPerPixel << ")" << std::endl;
+      for (int y = 0; y < height; y += batchSideLength) {
+         for (int x = 0; x < width; x += batchSideLength) {
+           cl::NDRange range(std::min(width-x, batchSideLength), std::min(height-y, batchSideLength));
+           queue.enqueueNDRangeKernel(render, cl::NDRange(x,y), range, cl::NullRange, NULL, &eExecute);
+           eExecute.wait();
+         }
+      }
+      if (i % 10 == 0) {
+        queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+        for (int j = 0; j < 3*width*height; j++) {
+          // Scale pixels up to account because accumulated pixels are divided by samplesPerPixel
+          pixels[j] = (samplesPerPixel/float(i))*pixels[j];
+        }
+        writeImage(filename, width, height, pixels);
+      }
+    }
+    delete[] pixels;
 }
 
 void PathTracer::render(std::string filename) {
@@ -203,7 +211,7 @@ void PathTracer::render(std::string filename) {
   CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, texCoords, normals, materials);
 
   cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
-  runKernel(queue, render, width, height, samplesPerPixel);
+  runKernel(queue, render, width, height, samplesPerPixel, filename, bc);
 
   float *pixels = new float[3*width*height];
   queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
