@@ -153,7 +153,9 @@ void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height,
      int batchSideLength = 32;
      for (int y = 0; y < height; y += batchSideLength) {
          for (int x = 0; x < width; x += batchSideLength) {
-             float fractionComplete = batchSideLength*float(y*width/batchSideLength + x)/(width*height);
+             float pixelsCompleted = x*std::min(height-y, batchSideLength) + y*width;
+             float totalPixels = width*height;
+             float fractionComplete = pixelsCompleted / totalPixels;
              std::cout << 100.0*fractionComplete << "%" << ", (" << x << ", " << y << ")" << std::endl;
              for (int i = 0; i < samplesPerPixel; i++) {
                  cl::NDRange range(std::min(width-x, batchSideLength), std::min(height-y, batchSideLength));
