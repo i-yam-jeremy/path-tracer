@@ -174,11 +174,11 @@ void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height,
            eExecute.wait();
          }
       }
-      if (i % 10 == 0) {
+      if (i % 1 == 0) {
         queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
         for (int j = 0; j < 3*width*height; j++) {
           // Scale pixels up to account because accumulated pixels are divided by samplesPerPixel
-          pixels[j] = (samplesPerPixel/float(i))*pixels[j];
+          pixels[j] = (samplesPerPixel/float(i+1))*pixels[j];
         }
         writeImage(filename, width, height, pixels);
       }

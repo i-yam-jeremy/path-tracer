@@ -260,7 +260,7 @@ Bounce renderPath(Ray ray, uint *randState, global const float* vertices, global
    Material mat = materials[in.triIndex];
    if (rand(0,1,randState) < mat.emissiveness) {
        b.hasOutRay = false;
-       b.color = 15.0f*mat.emissionColor;
+       b.color = 5.0f*mat.emissionColor;
        return b; // Emitter
    }
    if (rand(0,1,randState) < 0.25) {
