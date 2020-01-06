@@ -1,1 +1,1 @@
-# path-tracer
+# OpenCL Path Tracer
