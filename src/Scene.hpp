@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "Object.hpp"
 
@@ -25,12 +26,11 @@ public:
       @param configFilename - The path to the scene config file.
     */
     Scene(std::string configFilename);
-    ~Scene();
     /*
       Returns the objects in this scene.
       @return The objects in this scene.
     */
-    std::vector<Object*> getObjects();
+    std::vector<std::shared_ptr<Object>> getObjects();
     /*
       Returns the width of the output image that will be produced by the path
       tracer.
@@ -65,7 +65,7 @@ private:
     /*
       The objects in this scene.
     */
-    std::vector<Object*> objects;
+    std::vector<std::shared_ptr<Object>> objects;
     /*
       The width of the output image that will be produced by the path tracer.
     */
@@ -91,7 +91,7 @@ private:
       Adds the given object to this scene.
       @param obj - The object to be added.
     */
-    void addObject(Object* obj);
+    void addObject(std::shared_ptr<Object> obj);
 };
 
 #endif /* Scene_hpp */

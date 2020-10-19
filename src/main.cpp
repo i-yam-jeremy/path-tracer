@@ -39,12 +39,10 @@ int main(int argc, const char * argv[]) {
 
     std::chrono::milliseconds startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
 
-    Scene *scene = new Scene(sceneConfigFilename);
+    Scene scene(sceneConfigFilename);
 
-    PathTracer pathTracer(scene);
+    PathTracer pathTracer(&scene);
     pathTracer.render(outputImageName);
-
-    delete scene;
 
     std::chrono::milliseconds endTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
 

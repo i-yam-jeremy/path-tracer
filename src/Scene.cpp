@@ -56,23 +56,17 @@ Scene::Scene(std::string configFilename) {
                                                      atof(params[7].c_str()),
                                                      atof(params[8].c_str()),
                                                      atof(params[9].c_str()));
-            this->addObject(new Object(baseDir + "/" + objRelativePath,
+            this->addObject(std::make_shared<Object>(baseDir + "/" + objRelativePath,
                                        Material(emissiveness, emissionColor, metalness, baseColor)));
         }
     }
 }
 
-Scene::~Scene() {
-    for (auto obj : this->objects) {
-        delete obj;
-    }
-}
-
-void Scene::addObject(Object* obj) {
+void Scene::addObject(std::shared_ptr<Object> obj) {
     this->objects.push_back(obj);
 }
 
-std::vector<Object*> Scene::getObjects() {
+std::vector<std::shared_ptr<Object>> Scene::getObjects() {
     return objects;
 }
 

@@ -10,6 +10,7 @@
 #define Object_hpp
 
 #include <string>
+#include <memory>
 
 #include "Material.hpp"
 #include "OBJLoader.hpp"
@@ -26,7 +27,6 @@ public:
       @param material - The material to use for this object.
     */
     Object(std::string objFilename, Material material);
-    ~Object();
     /*
       Returns the non-indexed vertex positions in x,y,z order stored as a float
       vector.
@@ -55,7 +55,7 @@ private:
     /*
       The loaded OBJ mesh.
     */
-    OBJ *obj;
+    std::unique_ptr<OBJ> obj;
     /*
       The material used by this object.
     */

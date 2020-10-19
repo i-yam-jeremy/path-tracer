@@ -115,9 +115,9 @@ cl::Program buildProgram(cl::Context context, cl::Device device) {
     return program;
 }
 
-void processObjects(std::vector<Object*> objects, std::vector<float> *vertices, std::vector<float> *texCoords, std::vector<float> *normals, std::vector<Material> *materials, int *triCount) {
+void processObjects(std::vector<std::shared_ptr<Object>> objects, std::vector<float> *vertices, std::vector<float> *texCoords, std::vector<float> *normals, std::vector<Material> *materials, int *triCount) {
     for (int i = 0; i < objects.size(); i++) {
-        Object *obj = objects[i];
+        auto obj = objects[i];
         std::vector<float> vbuf = obj->getVertexBuffer();
         *triCount += vbuf.size()/9;
         vertices->insert(vertices->end(), vbuf.begin(), vbuf.end());
@@ -201,7 +201,7 @@ void PathTracer::render(std::string filename) {
   std::vector<float> vertices, texCoords, normals;
   std::vector<Material> materials;
   int triCount = 0;
-  processObjects(this->scene->getObjects(), &vertices, &texCoords, &normals, &materials, &triCount);
+  processObjects(scene->getObjects(), &vertices, &texCoords, &normals, &materials, &triCount);
 
 
   //create queue to which we will push commands for the device.

@@ -9,24 +9,20 @@
 #include "Object.hpp"
 
 Object::Object(std::string filename, Material material) {
-    this->obj = new OBJ(filename);
+    this->obj = std::make_unique<OBJ>(filename);
     this->material = material;
 }
 
-Object::~Object() {
-    delete this->obj;
-}
-
 std::vector<float>& Object::getVertexBuffer() {
-    return this->obj->getVertexBuffer();
+    return obj->getVertexBuffer();
 }
 
 std::vector<float>& Object::getTexCoordBuffer() {
-    return this->obj->getTexCoordBuffer();
+    return obj->getTexCoordBuffer();
 }
 
 std::vector<float>& Object::getNormalBuffer() {
-    return this->obj->getNormalBuffer();
+    return obj->getNormalBuffer();
 }
 
 Material Object::getMaterial() {
