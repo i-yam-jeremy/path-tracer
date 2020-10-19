@@ -1,6 +1,7 @@
 R"(
 
 #define PI 3.1415926536
+#define EPSILON 0.00001
 
 /*
   Reflects the given vector I across the given normal N.
@@ -134,6 +135,7 @@ float triArea(float3 A, float3 B, float3 C) {
 /*
   Calculates the intersection between a ray and a triangle if one exists.
     The triangle is specified by the vertices A,B,C.
+    Uses the Moller-Trumbore intersection algorithm.
   @param ray - The ray to used to check intersection.
   @param A - A vertex of the triangle.
   @param B - A vertex of the triangle.
@@ -154,34 +156,47 @@ Intersection rayTriangleIntersection(Ray ray, float3 A, float3 B, float3 C, floa
    notIntersection.normal = (float3)(0,0,0);
    notIntersection.triIndex = -1;
    notIntersection.intersects = false;
-   float3 N = normalize(cross(A-B, A-C));
-   float3 p = A;
-    //Plane intersection
-   float d = -dot(p, N);
-   float denominator = dot(ray.dir, N);
-   if (fabs(denominator) < 0.00001) return notIntersection;
-   float t = -(dot(ray.origin, N) + d) / denominator;
-   if (t < 0) return notIntersection;
-    //Triangle intersection
-   float3 pos = ray.origin + ray.dir*t;
-   float fullTriArea = triArea(A,B,C);
-   float aA = triArea(pos, B, C);
-   float bA = triArea(pos, A, C);
-   float cA = triArea(pos, A, B);
-   float alpha = aA / fullTriArea;
-   float beta = bA / fullTriArea;
-   float gamma = cA / fullTriArea;
-   if (fabs(fullTriArea - (aA+bA+cA)) < 0.0001 && fullTriArea > 0.0001) {
+   
+   float3 edge1, edge2, p, s, q;
+   float det, inv_det, u, v;
+
+   edge1 = B - A;
+   edge2 = C - A;
+   p = cross(ray.dir, edge2);
+   det = dot(edge1, p);
+   if (det > -EPSILON && det < EPSILON) {
+    return notIntersection;
+   }
+   inv_det = 1.0/det;
+   s = ray.origin - A;
+   u = inv_det * dot(s, p);
+   if (u < 0.0 || u > 1.0) {
+    return notIntersection;
+   }
+   q = cross(s, edge1);
+   v = inv_det * dot(ray.dir, q);
+   if (v < 0.0 || u + v > 1.0) {
+    return notIntersection;
+   }
+
+   float t = inv_det * dot(edge2, q);
+
+   if (t > EPSILON) {
        Intersection in;
        in.t = t;
-       in.pos = pos;
+       float alpha, beta, gamma;
+       gamma = v;
+       beta = u;
+       alpha = 1.0 - u - v;
+       in.pos = ray.origin + t*ray.dir;
        in.texCoord = alpha*tcA + beta*tcB + gamma*tcC;
        in.normal = normalize(alpha*nA + beta*nB + gamma*nC);
        in.triIndex = triIndex;
        in.intersects = true;
        return in;
+   } else {
+    return notIntersection;
    }
-   return notIntersection;
 }
 
 /*
@@ -255,7 +270,7 @@ Bounce renderPath(Ray ray, uint *randState, global const float* vertices, global
    Intersection in = closestTriangle(ray, vertices, texCoords, normals, triCount);
    if (!in.intersects) {
        b.hasOutRay = false;
-       b.color = (float3)(0,0,0);
+       b.color = (float3)(0.8,0.8,0.8);
        return b; // Background
    }
    Material mat = materials[in.triIndex];
