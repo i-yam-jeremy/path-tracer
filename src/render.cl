@@ -1,3 +1,4 @@
+R"(
 
 #define PI 3.1415926536
 
@@ -48,7 +49,7 @@ float randUnit(uint *randState) {
    x ^= x >> 17;
    x^= x << 5;
    *randState = x;
-   return float(x) / 4294967296.0;
+   return (float)(x) / 4294967296.0;
 }
 
 /*
@@ -277,10 +278,10 @@ Bounce renderPath(Ray ray, uint *randState, global const float* vertices, global
    float3 N = in.normal;
    float theta = rand(0, 2*PI, randState);
    float phi = rand(0, 2*PI, randState);
-   float3 s = (float3)(1.0, theta, phi); // Random point on sphere
-   float3 pathDir = (float3)(s.x*sin(s.z)*cos(s.y),
-                             s.x*sin(s.z)*sin(s.y),
-                             s.x*cos(s.z));
+   float3 pathDir = (float3)(1,1,1);
+   do {
+    pathDir = (float3)(randUnit(randState), randUnit(randState), randUnit(randState));
+   } while (dot(pathDir,pathDir) >= 1.0);
    pathDir = pathDir + N;
    pathDir = normalize(pathDir);
    float lambertReflectanceFactor = dot(N, pathDir);
@@ -309,8 +310,8 @@ void kernel render(global const float* vertices, global const float* texCoords, 
    int x = get_global_id(0);
    int y = get_global_id(1);
    uint randState = randStates[y*width + x];
-   float2 uvOffset = (float2)(rand(0,1,&randState), rand(0,1,&randState)) / float(height);
-   float2 uv = uvOffset + (float2)(x - width/2.0, y - height/2.0) / float(height);
+   float2 uvOffset = (float2)(rand(0,1,&randState), rand(0,1,&randState)) / (float)(height);
+   float2 uv = uvOffset + (float2)(x - width/2.0, y - height/2.0) / (float)(height);
    float3 camera = (float3)(0, 0, -2);
    float3 rayDir = normalize((float3)(uv.x, uv.y, 0) - camera);
    Ray ray = make_ray(camera, rayDir);
@@ -329,3 +330,5 @@ void kernel render(global const float* vertices, global const float* texCoords, 
    outPixels[pixelIndex+2] += color.z;
    randStates[y*width + x] = randState;
 }                                                                               ;
+
+)"
