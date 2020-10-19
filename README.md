@@ -8,6 +8,7 @@ This project is a path tracer using OpenCL for acceleration. A path tracer rende
 
 # Running
 
+1. Build with CMake
 1. Run `PathTracer --listDevices` to list the OpenCL devices available.
 1. Create a scene configuration file ([instructions here](scene-config-instructions.md)).
 1. Run `PathTracer width height samplesPerPixel clPlatformIndex clDeviceIndex sceneConfigFilename outputImageName` where the output image is a PPM file.
