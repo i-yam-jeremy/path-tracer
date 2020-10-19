@@ -9,6 +9,7 @@
 #include "PathTracer.hpp"
 
 #include <iostream>
+#include <memory>
 #include "cl.hpp"
 
 #include "Image.hpp"
@@ -82,9 +83,9 @@ CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, 
     bc.outPixels = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*3*width*height);
     bc.randStates = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(unsigned int)*width*height);
 
-    float *pixels = new float[3*width*height]();
+    auto pixels = std::make_unique<float[]>(3*width*height);
 
-    unsigned int *randStates = new unsigned int[width*height];
+    auto randStates = std::make_unique<unsigned int[]>(width*height);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             randStates[y*width + x] = (x+1)*(y+1);
@@ -95,11 +96,8 @@ CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, 
     queue.enqueueWriteBuffer(bc.texCoords,CL_TRUE,0,sizeof(float)*texCoords.size(),&texCoords[0]);
     queue.enqueueWriteBuffer(bc.normals,CL_TRUE,0,sizeof(float)*normals.size(),&normals[0]);
     queue.enqueueWriteBuffer(bc.materials,CL_TRUE,0,sizeof(Material)*materials.size(),&materials[0]);
-    queue.enqueueWriteBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
-    queue.enqueueWriteBuffer(bc.randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates);
-
-    delete[] pixels;
-    delete[] randStates;
+    queue.enqueueWriteBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels.get());
+    queue.enqueueWriteBuffer(bc.randStates,CL_TRUE,0,sizeof(unsigned int)*width*height,randStates.get());
 
     return bc;
 }
@@ -165,7 +163,7 @@ void writeImage(std::string filename, int width, int height, float *pixels) {
 void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height, int samplesPerPixel, std::string filename, CLBufferCollection bc) {
     cl::Event eExecute;
     int batchSideLength = 32;
-    float *pixels = new float[3*width*height];
+    auto pixels = std::make_unique<float[]>(3 * width * height);
     for (int i = 0; i < samplesPerPixel; i++) {
       float fractionComplete = float(i)/samplesPerPixel;
       std::cout << 100.0*fractionComplete << "% (" << i << "/" << samplesPerPixel << ")" << std::endl;
@@ -176,16 +174,15 @@ void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height,
            eExecute.wait();
          }
       }
-      if (i % 1 == 0) {
-        queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+      if (i % 50 == 0) {
+        queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels.get());
         for (int j = 0; j < 3*width*height; j++) {
           // Scale pixels up to account because accumulated pixels are divided by samplesPerPixel
           pixels[j] = (samplesPerPixel/float(i+1))*pixels[j];
         }
-        writeImage(filename, width, height, pixels);
+        writeImage(filename, width, height, pixels.get());
       }
     }
-    delete[] pixels;
 }
 
 void PathTracer::render(std::string filename) {
@@ -215,12 +212,10 @@ void PathTracer::render(std::string filename) {
   cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
   runKernel(queue, render, width, height, samplesPerPixel, filename, bc);
 
-  float *pixels = new float[3*width*height];
-  queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels);
+  auto pixels = std::make_unique<float[]>(3*width*height);
+  queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels.get());
 
   queue.finish();
 
-  writeImage(filename, width, height, pixels);
-
-  delete[] pixels;
+  writeImage(filename, width, height, pixels.get());
 }
