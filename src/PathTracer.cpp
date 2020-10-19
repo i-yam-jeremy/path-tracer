@@ -15,7 +15,9 @@
 #include "Object.hpp"
 #include "Material.hpp"
 
-#include "render-cl-kernel.hpp" // Dynamically generated from render.cl
+const std::string renderKernelCode =
+#include "render.cl"
+;
 
 PathTracer::PathTracer(Scene *scene) {
     this->scene = scene;
