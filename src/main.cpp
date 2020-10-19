@@ -20,7 +20,7 @@ void usage() {
 }
 
 int main(int argc, const char * argv[]) {
-    if (argc != 2 && argc != 3) {
+    /*if (argc != 2 && argc != 3) {
       usage();
       exit(1);
     }
@@ -32,10 +32,10 @@ int main(int argc, const char * argv[]) {
     if (argc != 3) {
       usage();
       exit(1);
-    }
+    }*/
 
-    std::string sceneConfigFilename = argv[1];
-    std::string outputImageName = argv[2];
+    std::string sceneConfigFilename = "C:/Users/Jeremy Berchtold/Documents/GitHub/path-tracer/scenes/scene2.config";// argv[1];
+    std::string outputImageName = "C:/Users/Jeremy Berchtold/path-trace.ppm";
 
     std::chrono::milliseconds startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
 

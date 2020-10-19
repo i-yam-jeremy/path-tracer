@@ -16,7 +16,8 @@
   It is packed so it can be directly sent to an OpenCL buffer and read from the
    device.
 */
-struct __attribute__ ((packed)) Material {
+#pragma pack(push, 1)
+struct Material {
   /*
     The probability the material will emit light.
   */
@@ -49,6 +50,7 @@ struct __attribute__ ((packed)) Material {
   */
   Material();
 };
+#pragma pack(pop)
 
 /*
   Creates a cl_float3 from the given x, y, z components.

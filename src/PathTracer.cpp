@@ -60,7 +60,7 @@ cl::Device getDevice(int platformIndex, int deviceIndex) {
         std::cout << "Device index " << platformIndex << " out of range. Only " << allPlatforms.size() << " devices on this platform." << std::endl;
         exit(1);
     }
-    cl::Device device = allDevices[1];
+    cl::Device device = allDevices[deviceIndex];
     std::cout<< "Using device: "<< device.getInfo<CL_DEVICE_NAME>() << std::endl;
 
     return device;
