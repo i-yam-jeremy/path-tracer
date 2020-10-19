@@ -15,4 +15,4 @@ This project is a path tracer using OpenCL for acceleration. A path tracer rende
 # Testing
 
 1. Build with CMake
-2. Run 'PathTracer_tst'
+2. Run `PathTracer_tst`
