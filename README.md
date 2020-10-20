@@ -14,7 +14,7 @@
 1. Build with CMake
 1. Run `PathTracer --listDevices` to list the OpenCL devices available and obtain `clPlatformIndex` and `clDeviceIndex` for the selected device.
 1. Create a scene configuration file ([instructions here](scene-config-instructions.md)).
-1. Run `PathTracer width height samplesPerPixel clPlatformIndex clDeviceIndex sceneConfigFilename outputImageName` where the output image is a PPM file.
+1. Run `PathTracer width height samplesPerPixel clPlatformIndex clDeviceIndex imageOutputFrequency sceneConfigFilename outputImageName` where the output image is a PPM file.
 
 # Testing
 
