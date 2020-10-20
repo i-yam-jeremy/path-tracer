@@ -1,11 +1,7 @@
 # Scene Config File Specification
 
-The file is a list of commands. The commands are as follows.
-Lines that don't match any of these commands are ignored.  
+The file is a list of objects.
 
-* `spp <int samplesPerPixel>`, sets the samples per pixel for the path tracer
-* `renderSize <int width> <int height>`, sets the dimensions of the output rendered image
-* `device <int platformIndex> <int deviceIndex>`, specifies the OpenCL device obtained from `pt --listDevices`
 * `object <string objPath> <float emissiveness> <float3 emissionColor> <float metalness> <float3 baseColor>`  
     * `objPath` is the path to the OBJ model.
     * `emissiveness` defines the probability the material will emit light. 
