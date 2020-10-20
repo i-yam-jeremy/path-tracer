@@ -20,8 +20,14 @@ const std::string renderKernelCode =
 #include "render.cl"
 ;
 
-PathTracer::PathTracer(Scene *scene) {
+PathTracer::PathTracer(Scene *scene, int width, int height, int samplesPerPixel, int clPlatformIndex, int clDeviceIndex, int imageOutputFrequency) {
     this->scene = scene;
+    this->width = width;
+    this->height = height;
+    this->samplesPerPixel = samplesPerPixel;
+    this->clPlatformIndex = clPlatformIndex;
+    this->clDeviceIndex = clDeviceIndex;
+    this->imageOutputFrequency = imageOutputFrequency;
 }
 
 void PathTracer::listOpenCLDevices() {
@@ -47,7 +53,7 @@ void PathTracer::listOpenCLDevices() {
   }
 }
 
-cl::Device getDevice(int platformIndex, int deviceIndex) {
+cl::Device PathTracer::getDevice(int platformIndex, int deviceIndex) {
     std::vector<cl::Platform> allPlatforms;
     cl::Platform::get(&allPlatforms);
     if (allPlatforms.size() <= platformIndex) {
@@ -69,11 +75,7 @@ cl::Device getDevice(int platformIndex, int deviceIndex) {
     return device;
 }
 
-struct CLBufferCollection {
-    cl::Buffer vertices, texCoords, normals, materials, outPixels, randStates;
-};
-
-CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, int width, int height, std::vector<float> vertices, std::vector<float> texCoords, std::vector<float> normals, std::vector<Material> materials) {
+PathTracer::CLBufferCollection PathTracer::createCLBuffers(cl::Context context, cl::CommandQueue queue, const std::vector<float>& vertices, const std::vector<float>& texCoords, const std::vector<float>& normals, std::vector<Material> materials) {
     CLBufferCollection bc;
 
     bc.vertices = cl::Buffer(context,CL_MEM_READ_WRITE,sizeof(float)*vertices.size());
@@ -102,7 +104,7 @@ CLBufferCollection createCLBuffers(cl::Context context, cl::CommandQueue queue, 
     return bc;
 }
 
-cl::Program buildProgram(cl::Context context, cl::Device device) {
+cl::Program PathTracer::buildProgram(cl::Context context, cl::Device device) {
     cl::Program::Sources sources;
     sources.push_back({renderKernelCode.c_str(),renderKernelCode.length()});
 
@@ -115,7 +117,7 @@ cl::Program buildProgram(cl::Context context, cl::Device device) {
     return program;
 }
 
-void processObjects(std::vector<std::shared_ptr<Object>> objects, std::vector<float> *vertices, std::vector<float> *texCoords, std::vector<float> *normals, std::vector<Material> *materials, int *triCount) {
+void PathTracer::processObjects(std::vector<std::shared_ptr<Object>> objects, std::vector<float> *vertices, std::vector<float> *texCoords, std::vector<float> *normals, std::vector<Material> *materials, int *triCount) {
     for (int i = 0; i < objects.size(); i++) {
         auto obj = objects[i];
         std::vector<float> vbuf = obj->getVertexBuffer();
@@ -131,7 +133,7 @@ void processObjects(std::vector<std::shared_ptr<Object>> objects, std::vector<fl
     }
 }
 
-cl::Kernel createRenderKernel(cl::Program program, CLBufferCollection bc, int triCount, int width, int height, int samplesPerPixel) {
+cl::Kernel PathTracer::createRenderKernel(cl::Program program, PathTracer::CLBufferCollection bc, int triCount) {
     cl::Kernel render(program, "render");
 
     render.setArg(0, bc.vertices);
@@ -148,7 +150,7 @@ cl::Kernel createRenderKernel(cl::Program program, CLBufferCollection bc, int tr
     return render;
 }
 
-void writeImage(std::string filename, int width, int height, float *pixels) {
+void PathTracer::writeImage(std::string filename, int width, int height, float *pixels) {
     Image image(width, height);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -160,7 +162,7 @@ void writeImage(std::string filename, int width, int height, float *pixels) {
     image.write(filename);
 }
 
-void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height, int samplesPerPixel, std::string filename, CLBufferCollection bc) {
+void PathTracer::runKernel(cl::CommandQueue queue, cl::Kernel render, std::string outputImageFilename, PathTracer::CLBufferCollection bc) {
     cl::Event eExecute;
     int batchSideLength = 32;
     auto pixels = std::make_unique<float[]>(3 * width * height);
@@ -174,25 +176,19 @@ void runKernel(cl::CommandQueue queue, cl::Kernel render, int width, int height,
            eExecute.wait();
          }
       }
-      if (i % 50 == 0) {
+      if (i % imageOutputFrequency == 0) {
         queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels.get());
         for (int j = 0; j < 3*width*height; j++) {
           // Scale pixels up to account because accumulated pixels are divided by samplesPerPixel
           pixels[j] = (samplesPerPixel/float(i+1))*pixels[j];
         }
-        writeImage(filename, width, height, pixels.get());
+        writeImage(outputImageFilename, width, height, pixels.get());
       }
     }
 }
 
-void PathTracer::render(std::string filename) {
-  int platformIndex = scene->getCLPlatformIndex();
-  int deviceIndex = scene->getCLDeviceIndex();
-  int width = scene->getRenderWidth();
-  int height = scene->getRenderHeight();
-  int samplesPerPixel = scene->getSamplesPerPixel();
-
-  cl::Device device = getDevice(platformIndex, deviceIndex);
+void PathTracer::render(std::string outputImageFilename) {
+  cl::Device device = getDevice(clPlatformIndex, clDeviceIndex);
   cl::Context context({device});
 
 
@@ -207,15 +203,15 @@ void PathTracer::render(std::string filename) {
   //create queue to which we will push commands for the device.
   cl::CommandQueue queue(context, device);
 
-  CLBufferCollection bc = createCLBuffers(context, queue, width, height, vertices, texCoords, normals, materials);
+  CLBufferCollection bc = createCLBuffers(context, queue, vertices, texCoords, normals, materials);
 
-  cl::Kernel render = createRenderKernel(program, bc, triCount, width, height, samplesPerPixel);
-  runKernel(queue, render, width, height, samplesPerPixel, filename, bc);
+  cl::Kernel render = createRenderKernel(program, bc, triCount);
+  runKernel(queue, render, outputImageFilename, bc);
 
   auto pixels = std::make_unique<float[]>(3*width*height);
   queue.enqueueReadBuffer(bc.outPixels,CL_TRUE,0,sizeof(float)*3*width*height,pixels.get());
 
   queue.finish();
 
-  writeImage(filename, width, height, pixels.get());
+  writeImage(outputImageFilename, width, height, pixels.get());
 }

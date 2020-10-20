@@ -10,19 +10,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 #include "StringUtil.hpp"
 
-std::string getBaseDir(std::string filename) {
-  long index = filename.find_last_of("/");
-  if (index > -1) {
-    return filename.substr(0, index);
-  }
-  return "";
-}
-
 Scene::Scene(std::string configFilename) {
-    std::string baseDir = getBaseDir(configFilename);
+    std::string baseDir = std::filesystem::path(configFilename).parent_path().string();
     std::ifstream file(configFilename);
     if (!file.is_open()) {
       std::cout << "Could not open scene config file: " << configFilename << std::endl;
@@ -31,20 +24,9 @@ Scene::Scene(std::string configFilename) {
     std::string line;
 
     while (std::getline(file, line)) {
-        if (line == "") continue;
         auto params = stringutil::split(line, ' ');
-        if (params[0] == "spp") {
-            this->samplesPerPixel = atoi(params[1].c_str());
-        }
-        else if (params[0] == "renderSize") {
-            this->width = atoi(params[1].c_str());
-            this->height = atoi(params[2].c_str());
-        }
-        else if (params[0] == "device") {
-            this->clPlatformIndex = atoi(params[1].c_str());
-            this->clDeviceIndex = atoi(params[2].c_str());
-        }
-        else if (params[0] == "object") {
+        if (params.size() == 0) continue;
+        if (params[0] == "object") {
             std::string objRelativePath = params[1];
             float emissiveness = atof(params[2].c_str());
             cl_float3 emissionColor = make_cl_float3(
@@ -56,36 +38,12 @@ Scene::Scene(std::string configFilename) {
                                                      atof(params[7].c_str()),
                                                      atof(params[8].c_str()),
                                                      atof(params[9].c_str()));
-            this->addObject(std::make_shared<Object>(baseDir + "/" + objRelativePath,
+            objects.push_back(std::make_shared<Object>(baseDir + "/" + objRelativePath,
                                        Material(emissiveness, emissionColor, metalness, baseColor)));
         }
     }
 }
 
-void Scene::addObject(std::shared_ptr<Object> obj) {
-    this->objects.push_back(obj);
-}
-
 std::vector<std::shared_ptr<Object>> Scene::getObjects() {
     return objects;
-}
-
-int Scene::getRenderWidth() {
-  return width;
-}
-
-int Scene::getRenderHeight() {
-  return height;
-}
-
-int Scene::getSamplesPerPixel() {
-  return samplesPerPixel;
-}
-
-int Scene::getCLPlatformIndex() {
-  return clPlatformIndex;
-}
-
-int Scene::getCLDeviceIndex() {
-  return clDeviceIndex;
 }

@@ -15,12 +15,12 @@
 
 void usage() {
   std::cout << "Usage: " << std::endl;
-  std::cout << "  pt --listDevices" << std::endl;
-  std::cout << "  pt sceneConfigFilename outputImageName" << std::endl;
+  std::cout << "\tPathTracer --listDevices" << std::endl;
+  std::cout << "\tPathTracer width height samplesPerPixel clPlatformIndex clDeviceIndex imageOutputFrequency sceneConfigFilename outputImageName" << std::endl;
 }
 
 int main(int argc, const char * argv[]) {
-    /*if (argc != 2 && argc != 3) {
+    if (argc != 2 && argc != 9) {
       usage();
       exit(1);
     }
@@ -29,19 +29,25 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 
-    if (argc != 3) {
+    if (argc != 9) {
       usage();
       exit(1);
-    }*/
+    }
 
-    std::string sceneConfigFilename = "C:/Users/Jeremy Berchtold/Documents/GitHub/path-tracer/scenes/scene2.config";// argv[1];
-    std::string outputImageName = "C:/Users/Jeremy Berchtold/path-trace.ppm";
+    int width = atoi(argv[1]);
+    int height = atoi(argv[2]);
+    int samplesPerPixel = atoi(argv[3]);
+    int clPlatformIndex = atoi(argv[4]);
+    int clDeviceIndex = atoi(argv[5]);
+    int imageOutputFrequency = atoi(argv[6]);
+    std::string sceneConfigFilename = argv[7];
+    std::string outputImageName = argv[8];
 
     std::chrono::milliseconds startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
 
     Scene scene(sceneConfigFilename);
 
-    PathTracer pathTracer(&scene);
+    PathTracer pathTracer(&scene, width, height, samplesPerPixel, clPlatformIndex, clDeviceIndex, imageOutputFrequency);
     pathTracer.render(outputImageName);
 
     std::chrono::milliseconds endTimeMs = std::chrono::duration_cast<std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
