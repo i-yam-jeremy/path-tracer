@@ -12,7 +12,7 @@ TEST(StringUtil, test1) {
     auto out = stringutil::split("a,hi,ba%% 32, def", ',');
     //assert
     EXPECT_EQ(out.size(), v.size());
-    for (int i = 0; i < v.size(); i++) {
+    for (size_t i = 0; i < v.size(); i++) {
         EXPECT_EQ(out[i], v[i]);
     }
 }
