@@ -122,6 +122,7 @@ OBJ::OBJ(std::string filename) {
     std::vector<float> indexedNormals;
     while (std::getline(file, line)) {
         auto params = stringutil::split(line, ' ');
+        if (params.size() == 0) continue;
         if (params[0] == "v") {
             readVertex(indexedVertices, params);
         }
